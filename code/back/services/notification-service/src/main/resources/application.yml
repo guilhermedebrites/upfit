@@ -1,0 +1,14 @@
+server:
+  port: ${PORT:8086}
+
+spring:
+  application:
+    name: notification-service
+
+aws:
+  endpoint: ${AWS_ENDPOINT:}
+  region: ${AWS_REGION:us-east-1}
+
+logging:
+  level:
+    root: INFO

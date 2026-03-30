@@ -1,0 +1,42 @@
+cff-version: 1.0.1
+message: If you use UpFit in your research or project, please cite it using the metadata from this file.
+title: UpFit - Seu próximo nível fitness
+authors:
+  - family-names: Gomes de Brites
+    given-names: Guilherme
+  - family-names: Batella
+    given-names: Caio
+  - family-names: Máximo Campos do Carmo
+    given-names: Pedro
+  - family-names: Gabriel Cruz Pereira
+    given-names: Victor
+  - family-names: de Paiva Gomes
+    given-names: Rafael
+  - family-names: Hugo Dutra Marinho
+    given-names: Vitor
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: Silva Tavares
+    given-names: Cleiton
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: de Macêdo Neto
+    given-names: Cristiano
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: Aramuni
+    given-names: João Paulo
+keywords:
+  - fitness
+  - treino
+  - workout tracking
+  - activity tracking
+  - progresso fitness
+  - rotina de treino
+  - performance física
+  - saúde
+  - evolução pessoal
+repository-code: https://github.com/ICEI-PUC-Minas-PPLES-TI/plf-es-2026-1-ti5-0492100-upfit
+license: CC-BY-4.0
+version: 1.0.0
+date-released: 2026-03-09
