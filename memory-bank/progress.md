@@ -1,0 +1,119 @@
+# UpFit — Progress
+
+## Fase 1: Hello World + Pipeline de Eventos ✅ CONCLUÍDA (17/03/2026)
+
+### Infraestrutura
+- [x] docker-compose.yml unificado (raiz do projeto)
+- [x] PostgreSQL 15 com 5 bancos separados (auth_db, workout_db, progression_db, group_db, challenge_db)
+- [x] LocalStack 3 com 4 filas SQS (ProgressionQueue, ChallengeQueue, GroupQueue, NotificationQueue)
+- [x] Tópico SNS WorkoutRecordedTopic com subscriptions para as 4 filas
+- [x] Rede compartilhada upfit-network
+- [x] Healthcheck no postgres e localstack
+- [x] restart: on-failure nos serviços
+
+### Serviços (Hello World — GET /health)
+- [x] auth-service — porta 8081, auth_db ✅
+- [x] workout-service — porta 8082, workout_db ✅
+- [x] progression-service — porta 8083, progression_db ✅
+- [x] group-service — porta 8084, group_db ✅
+- [x] challenge-service — porta 8085, challenge_db ✅
+- [x] notification-service — porta 8086, sem banco ✅
+
+### Pipeline de Eventos (End-to-End)
+- [x] workout-service: entidades JPA (Workout JOINED, RunningWorkout, StrengthWorkout, ExerciseEntry)
+- [x] workout-service: POST /workouts salva no banco e publica WorkoutRecorded no SNS
+- [x] progression-service: consome ProgressionQueue via SQS polling e loga o evento
+- [x] Pipeline validado end-to-end: POST /workouts → evento chega em progression-service
+
+---
+
+## Fase 2: Auth Service ✅ CONCLUÍDA (17/03/2026)
+- [x] POST /auth/register → cria User + Profile no banco
+- [x] POST /auth/login → retorna JWT + refreshToken
+- [x] POST /auth/refresh → renova JWT
+- [x] GET /profile/:userId
+- [x] PUT /profile/:userId (incluindo photoUrl vinda do S3 profile-assets)
+- [x] Adicionar UserRole (USER/ADMIN) ao User e embutir no JWT (V1__add_user_role.sql)
+- [x] JwtAuthFilter — valida Bearer token e popula SecurityContextHolder com role
+- [x] POST /auth/admin/promote — endpoint ADMIN-only para promover usuário
+- [x] Validado: register → login → token JWT válido
+
+---
+
+## Fase 3: Workout Completo (ATUAL)
+- [ ] GET /workouts/user/:id com autenticação JWT
+- [ ] POST /workouts aceita RunningWorkout e StrengthWorkout corretamente
+- [ ] Validado: register → login → POST /workouts autenticado → GET /workouts
+
+---
+
+## Fase 4: Progression Engine (FUTURO)
+- [ ] Criar entidade AchievementDefinition e endpoint POST /achievements/definitions (ADMIN)
+- [ ] Carregar user-level-thresholds.json do S3 (upfit-config) no startup
+- [ ] XP engine: processar WorkoutRecorded e atualizar Progression no banco
+- [ ] Recalcular nível usando thresholds do S3
+- [ ] Lógica de level up → publicar LevelUp no SNS
+- [ ] Lógica de streak
+- [ ] GET /progression/:userId
+- [ ] Validado: fazer treino → XP atualizado → nível correto
+
+---
+
+## Fase 5: Groups (FUTURO)
+- [ ] POST /groups (incluindo imageUrl vinda do S3 group-assets)
+- [ ] PUT /groups/:id
+- [ ] POST /groups/:id/join
+- [ ] DELETE /groups/:id/leave
+- [ ] Carregar group-level-thresholds.json do S3 (upfit-config) no startup
+- [ ] Consumir GroupQueue: incrementar groupScore do membro e groupXp do grupo
+- [ ] Recalcular groupLevel usando thresholds do S3
+- [ ] Validado: criar grupo → entrar → fazer treino → groupXp atualizado
+
+---
+
+## Fase 6: Challenges (FUTURO)
+- [ ] POST /challenges
+- [ ] POST /challenges/join
+- [ ] Consumir ChallengeQueue: atualizar currentProgress das participações ativas do usuário
+- [ ] Quando meta atingida → publicar ChallengeCompleted no SNS
+- [ ] Validado: criar desafio → participar → fazer treino → progresso atualizado
+
+---
+
+## Fase 7: Notifications (FUTURO)
+- [ ] Consumir NotificationQueue (WorkoutRecorded, LevelUp, AchievementUnlocked, ChallengeCompleted)
+- [ ] Persistir Notification no banco
+- [ ] GET /notifications/:userId
+- [ ] Validado: fazer treino → notificação aparece no GET
+
+---
+
+## Fase 8: Cloud (FUTURO)
+- [ ] Terraform / CDK para infra AWS
+- [ ] EC2 + Docker deploy
+- [ ] RDS, SQS, SNS reais
+- [ ] CI/CD pipeline
+- [ ] CloudWatch logs e alertas
+
+---
+
+## Decisões Técnicas Registradas
+| Data | Decisão | Motivo |
+|------|---------|--------|
+| 17/03 | Deploy: EC2 (não ECS/Fargate) | Simplicidade na fase inicial |
+| 17/03 | Stack: Java 21 + Spring Boot 3.3.5 | Decisão do dev |
+| 17/03 | ORM: Spring Data JPA (Hibernate) | Decisão do dev |
+| 17/03 | Estrutura de pacotes: por camada | Padrão definido no CLAUDE.md |
+| 17/03 | Uma instância PostgreSQL, múltiplos bancos | Simplicidade local; RDS por serviço em prod se necessário |
+| 17/03 | Herança JPA: JOINED (sem discriminador) | Definido em domainModel.md |
+| 17/03 | SQS polling com @Scheduled(fixedDelay=5000) | Simplicidade; sem Spring Cloud AWS |
+| 17/03 | Evento WorkoutRecorded: eventType, userId, workoutId, type, durationMin, caloriesBurned | Payload mínimo definido na Fase 1 |
+| 17/03 | Filas SQS: Standard (não FIFO) | Eventos de treino são independentes; FIFO seria over-engineering |
+| 18/03 | Thresholds de nível: JSON no S3 (upfit-config) | Alteração sem redeploy; uma fonte de verdade; versionamento nativo do S3 |
+| 18/03 | Thresholds de usuário e grupo separados | Grupo acumula XP coletivamente — precisa de thresholds maiores |
+| 18/03 | Fotos de perfil/grupo: upload direto no S3 | Serviço persiste apenas a URL; cliente faz upload direto |
+| 18/03 | Group possui groupXp e groupLevel | XP do grupo vem dos treinos dos membros via GroupQueue |
+| 18/03 | Dois tópicos SNS: WorkoutRecordedTopic e NotificationTopic | WorkoutRecordedTopic para processamento de domínio; NotificationTopic exclusivo para notification-service |
+| 18/03 | NotificationQueue subscriber apenas do NotificationTopic | Desacopla notification-service de eventos de domínio |
+| 18/03 | UserRole: USER e ADMIN | ADMIN cria desafios e definições de conquistas; role embutido no JWT |
+| 18/03 | AchievementDefinition: entidade separada cadastrada por ADMIN | progression-service avalia regras ao processar WorkoutRecorded |

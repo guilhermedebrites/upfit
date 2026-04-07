@@ -78,7 +78,7 @@ uploads/
 ############################################
 
 # Ignore pasta memory-bank
-memory-bank/
+# memory-bank/
 
 # Ignore arquivo CLAUDE.md na raiz
-/CLAUDE.md
+# /CLAUDE.md
