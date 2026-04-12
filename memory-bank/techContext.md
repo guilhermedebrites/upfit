@@ -107,8 +107,11 @@ GET  /health
 
 ### progression-service (:8083)
 ```
-GET /progression/:userId    → retorna XP, nível, streak
-GET /health
+GET   /progression/:userId                      → retorna XP, nível, streak, conquistas
+POST  /achievements/definitions                 → cria definição de conquista (ADMIN only)
+GET   /achievements/definitions                 → lista todas as definições
+PATCH /achievements/definitions/:id/toggle      → ativa/desativa definição (ADMIN only)
+GET   /health
 ```
 
 ### group-service (:8084)
@@ -140,8 +143,9 @@ POST /achievements/definitions      → somente ADMIN pode cadastrar definiçõe
 ```
 > O role é extraído do JWT — sem chamada ao auth-service nos demais serviços.
 
-### Contratos adicionais (progression-service)
+### Endpoints protegidos por role ADMIN — lista completa
 ```
-POST /achievements/definitions  → cria definição de conquista (ADMIN only)
-GET  /achievements/definitions  → lista definições ativas
+POST  /challenges                              → challenge-service
+POST  /achievements/definitions                → progression-service
+PATCH /achievements/definitions/:id/toggle    → progression-service
 ```

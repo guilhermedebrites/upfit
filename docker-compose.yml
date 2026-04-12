@@ -42,6 +42,8 @@ services:
       - localstack-data:/var/lib/localstack
       - ./infra/localstack/setup.sh:/etc/localstack/init/ready.d/setup.sh
       - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      sh -c "chmod +x /etc/localstack/init/ready.d/setup.sh && exec docker-entrypoint.sh"
     ports:
       - "4566:4566"
     networks:
@@ -98,6 +100,7 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/workout_db
       DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-upfit-local-dev-secret-minimo-32-chars}
       AWS_ENDPOINT: ${AWS_ENDPOINT:-http://localstack:4566}
       AWS_REGION: ${AWS_REGION:-us-east-1}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-test}
@@ -125,11 +128,14 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/progression_db
       DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-upfit-local-dev-secret-minimo-32-chars}
       AWS_ENDPOINT: ${AWS_ENDPOINT:-http://localstack:4566}
       AWS_REGION: ${AWS_REGION:-us-east-1}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-test}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-test}
       SQS_PROGRESSION_QUEUE_URL: http://localstack:4566/000000000000/ProgressionQueue
+      NOTIFICATION_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:NotificationTopic
+      S3_CONFIG_BUCKET: upfit-config
     ports:
       - "8083:8083"
     networks:
