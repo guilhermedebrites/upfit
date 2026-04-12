@@ -90,11 +90,12 @@ lombok
 
 ### auth-service (:8081)
 ```
-POST /auth/register          → cria usuário
-POST /auth/login             → retorna JWT + refreshToken
-POST /auth/refresh           → renova JWT via refreshToken
-GET  /profile/:userId        → retorna perfil do usuário
-PUT  /profile/:userId        → atualiza perfil (bio, peso, altura, objetivo, foto)
+POST /auth/register                      → cria usuário
+POST /auth/login                         → retorna JWT + refreshToken
+POST /auth/refresh                       → renova JWT via refreshToken
+GET  /profile/:userId                    → retorna perfil do usuário
+PUT  /profile/:userId                    → atualiza perfil (bio, peso, altura, objetivo, foto)
+GET  /profile/upload-url?filename=...    → gera presigned URL para upload no S3 (profile-assets) — JWT obrigatório — válida 5 min
 GET  /health
 ```
 
@@ -116,10 +117,11 @@ GET   /health
 
 ### group-service (:8084)
 ```
-POST   /groups              → cria grupo
-PUT    /groups/:id          → edita grupo (nome, descrição, meta)
-POST   /groups/:id/join     → entra no grupo
-DELETE /groups/:id/leave    → sai do grupo
+POST   /groups                           → cria grupo
+PUT    /groups/:id                       → edita grupo (nome, descrição, meta)
+POST   /groups/:id/join                  → entra no grupo
+DELETE /groups/:id/leave                 → sai do grupo
+GET    /groups/upload-url?filename=...   → gera presigned URL para upload no S3 (group-assets) — JWT obrigatório — válida 5 min
 GET    /health
 ```
 
@@ -142,6 +144,18 @@ POST /challenges                    → somente ADMIN pode criar desafios
 POST /achievements/definitions      → somente ADMIN pode cadastrar definições de conquistas
 ```
 > O role é extraído do JWT — sem chamada ao auth-service nos demais serviços.
+
+### Fluxo de upload de imagens (presigned URL)
+```
+1. Frontend chama GET /profile/upload-url?filename=foto.jpg  (ou /groups/upload-url)
+2. Backend gera presigned URL via S3Presigner (AWS SDK v2) — válida 5 minutos
+3. Response: { "presignedUrl": "...", "objectUrl": "..." }
+4. Frontend faz PUT direto no S3 usando presignedUrl
+5. Frontend persiste objectUrl via PUT /profile/:userId ou POST /groups
+```
+> objectUrl = presignedUrl sem query string (parâmetros de assinatura).
+> Em dev local, a URL referencia http://localstack:4566 — substituir por http://localhost:4566 para testar no Postman/browser.
+> S3Presigner precisa de pathStyleAccessEnabled(true) para funcionar com LocalStack.
 
 ### Endpoints protegidos por role ADMIN — lista completa
 ```

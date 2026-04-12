@@ -37,6 +37,7 @@
 - [x] JwtAuthFilter — valida Bearer token e popula SecurityContextHolder com role
 - [x] POST /auth/admin/promote — endpoint ADMIN-only para promover usuário
 - [x] Validado: register → login → token JWT válido
+- [ ] GET /profile/upload-url?filename=... → presigned URL para upload no S3 (profile-assets) ← pendente
 
 ---
 
@@ -67,7 +68,8 @@
 
 ---
 
-## Fase 5: Groups (FUTURO)
+## Fase 5: Groups (ATUAL)
+- [ ] GET /groups/upload-url?filename=... → presigned URL para upload no S3 (group-assets)
 - [ ] POST /groups (incluindo imageUrl vinda do S3 group-assets)
 - [ ] PUT /groups/:id
 - [ ] POST /groups/:id/join
