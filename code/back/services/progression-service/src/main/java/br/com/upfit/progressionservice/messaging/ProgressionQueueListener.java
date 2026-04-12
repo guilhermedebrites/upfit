@@ -1,5 +1,7 @@
 package br.com.upfit.progressionservice.messaging;
 
+import br.com.upfit.progressionservice.dto.WorkoutRecordedEvent;
+import br.com.upfit.progressionservice.service.ProgressionEngineService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class ProgressionQueueListener {
 
     private final SqsClient sqsClient;
     private final ObjectMapper objectMapper;
+    private final ProgressionEngineService progressionEngineService;
 
     @Value("${sqs.queue.progression-url}")
     private String queueUrl;
@@ -36,9 +39,9 @@ public class ProgressionQueueListener {
 
         for (Message message : response.messages()) {
             try {
-                // SNS envelopa a mensagem — extrai o campo "Message" se presente
                 String eventBody = extractEventBody(message.body());
-                log.info("[progression-service] WorkoutRecorded recebido: {}", eventBody);
+                WorkoutRecordedEvent event = objectMapper.readValue(eventBody, WorkoutRecordedEvent.class);
+                progressionEngineService.process(event);
                 deleteMessage(message.receiptHandle());
             } catch (Exception e) {
                 log.error("[progression-service] Erro ao processar mensagem: {}", e.getMessage(), e);
@@ -52,9 +55,7 @@ public class ProgressionQueueListener {
             if (node.has("Message")) {
                 return node.get("Message").asText();
             }
-        } catch (Exception ignored) {
-            // não é JSON de envelope SNS — usa o body direto
-        }
+        } catch (Exception ignored) {}
         return rawBody;
     }
 

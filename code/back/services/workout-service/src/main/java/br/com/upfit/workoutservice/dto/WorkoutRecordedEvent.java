@@ -8,9 +8,10 @@ public record WorkoutRecordedEvent(
         UUID workoutId,
         String type,
         int durationMin,
-        Double caloriesBurned
+        Double caloriesBurned,
+        Double distanceKm
 ) {
-    public WorkoutRecordedEvent(UUID userId, UUID workoutId, String type, int durationMin, Double caloriesBurned) {
-        this("WorkoutRecorded", userId, workoutId, type, durationMin, caloriesBurned);
+    public WorkoutRecordedEvent(UUID userId, UUID workoutId, String type, int durationMin, Double caloriesBurned, Double distanceKm) {
+        this("WorkoutRecorded", userId, workoutId, type, durationMin, caloriesBurned, distanceKm);
     }
 }

@@ -23,12 +23,16 @@ public class WorkoutEventPublisher {
     private String topicArn;
 
     public void publishWorkoutRecorded(Workout workout, String type) {
+        Double distanceKm = (workout instanceof br.com.upfit.workoutservice.model.RunningWorkout r)
+                ? r.getDistanceKm() : null;
+
         WorkoutRecordedEvent event = new WorkoutRecordedEvent(
                 workout.getUserId(),
                 workout.getId(),
                 type,
                 workout.getDurationMin(),
-                workout.getCaloriesBurned()
+                workout.getCaloriesBurned(),
+                distanceKm
         );
 
         try {

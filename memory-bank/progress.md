@@ -40,22 +40,30 @@
 
 ---
 
-## Fase 3: Workout Completo (ATUAL)
-- [ ] GET /workouts/user/:id com autenticação JWT
-- [ ] POST /workouts aceita RunningWorkout e StrengthWorkout corretamente
-- [ ] Validado: register → login → POST /workouts autenticado → GET /workouts
+## Fase 3: Workout Completo ✅ CONCLUÍDA (11/04/2026)
+- [x] GET /workouts/user/:id com autenticação JWT
+- [x] POST /workouts protegido por JWT — userId extraído do token, não aceito no body
+- [x] WorkoutResponse retorna campos específicos por tipo (distanceKm/averagePace para RUNNING; primaryMuscleGroup/exercises para STRENGTH)
+- [x] workout-service com Spring Security + jjwt (mesmo padrão do auth-service)
+- [x] JWT_SECRET adicionado ao docker-compose para workout-service
+- [x] Validado: register → login → POST /workouts autenticado → GET /workouts/user/:id
 
 ---
 
-## Fase 4: Progression Engine (FUTURO)
-- [ ] Criar entidade AchievementDefinition e endpoint POST /achievements/definitions (ADMIN)
-- [ ] Carregar user-level-thresholds.json do S3 (upfit-config) no startup
-- [ ] XP engine: processar WorkoutRecorded e atualizar Progression no banco
-- [ ] Recalcular nível usando thresholds do S3
-- [ ] Lógica de level up → publicar LevelUp no SNS
-- [ ] Lógica de streak
-- [ ] GET /progression/:userId
-- [ ] Validado: fazer treino → XP atualizado → nível correto
+## Fase 4: Progression Engine ✅ CONCLUÍDA (11/04/2026)
+- [x] POST /achievements/definitions (ADMIN)
+- [x] GET /achievements/definitions
+- [x] PATCH /achievements/definitions/:id/toggle (ADMIN)
+- [x] user-level-thresholds.json carregado do S3 no startup com fallback em memória
+- [x] S3Client com pathStyleAccessEnabled(true) para LocalStack
+- [x] XP engine: RUNNING = distanceKm × 10 | STRENGTH = durationMin × 1
+- [x] Nível recalculado usando thresholds do S3
+- [x] Streak atualizado via lastWorkoutDate
+- [x] LevelUp publicado no NotificationTopic
+- [x] AchievementUnlocked publicado (regras: STREAK_N, VOLUME_N, LEVEL_N)
+- [x] WorkoutRecorded republicado no NotificationTopic após processamento
+- [x] GET /progression/:userId retorna XP, nível, streak e achievements com title e description
+- [x] Validado: POST /workouts → XP atualizado → nível correto → achievements desbloqueados
 
 ---
 

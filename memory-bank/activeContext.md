@@ -1,9 +1,9 @@
 # UpFit — Active Context
 
 ## Estado Atual
-**Fase 3: Workout Completo — ATUAL**
+**Fase 5: Groups — ATUAL**
 
-### Concluído (Fase 1)
+### Concluído (Fase 1) ✅ 17/03/2026
 - ✅ Todos os 6 serviços respondem GET /health
 - ✅ docker-compose up sobe tudo sem erro
 - ✅ PostgreSQL com 5 bancos separados
@@ -23,30 +23,36 @@
 - ✅ POST /auth/admin/promote — endpoint ADMIN-only para promover usuário
 - ✅ Validado end-to-end: register → login → token JWT válido
 
+### Concluído (Fase 3) ✅ 11/04/2026
+- ✅ GET /workouts/user/:id com autenticação JWT
+- ✅ POST /workouts protegido por JWT (userId extraído do token, não do body)
+- ✅ WorkoutResponse tipado: campos específicos por tipo (RUNNING / STRENGTH)
+- ✅ workout-service com Spring Security + jjwt
+- ✅ JWT_SECRET adicionado ao docker-compose do workout-service
+- ✅ Validado: register → login → POST /workouts → GET /workouts/user/:id
+
+### Concluído (Fase 4) ✅ 11/04/2026
+- ✅ POST /achievements/definitions (ADMIN)
+- ✅ GET /achievements/definitions
+- ✅ PATCH /achievements/definitions/:id/toggle (ADMIN)
+- ✅ user-level-thresholds.json carregado do S3 no startup com fallback em memória
+- ✅ XP engine: processa WorkoutRecorded e atualiza Progression no banco
+- ✅ Nível recalculado usando thresholds do S3
+- ✅ Streak atualizado (lastWorkoutDate rastreado na entidade)
+- ✅ LevelUp publicado no NotificationTopic
+- ✅ AchievementUnlocked publicado quando regra atingida (STREAK_N, VOLUME_N, LEVEL_N)
+- ✅ GET /progression/:userId retorna XP, nível, streak e achievements com title e description
+
 ---
 
 ## Fases (Core Domains)
 
-### Fase 3 — Workout Completo (ATUAL)
-**Pré-requisito:** Fase 2 concluída (JWT necessário)
-**Critério de done:**
-- [ ] GET /workouts/user/:id com autenticação JWT
-- [ ] POST /workouts aceita RunningWorkout e StrengthWorkout corretamente
-- [ ] Validado: register → login → POST /workouts autenticado → GET /workouts
+### Fase 3 — Workout Completo ✅ CONCLUÍDA (11/04/2026)
 
-### Fase 4 — Progression Engine
-**Pré-requisito:** Fase 3 concluída
-**Critério de done:**
-- [ ] Carregar user-level-thresholds.json do S3 (upfit-config) no startup
-- [ ] XP engine: processar WorkoutRecorded e atualizar Progression no banco
-- [ ] Recalcular nível usando thresholds do S3
-- [ ] Lógica de level up → publicar LevelUp no SNS
-- [ ] Lógica de streak
-- [ ] GET /progression/:userId
-- [ ] Validado: fazer treino → XP atualizado → nível correto
+### Fase 4 — Progression Engine ✅ CONCLUÍDA (11/04/2026)
 
-### Fase 5 — Groups
-**Pré-requisito:** Fase 2 concluída (JWT)
+### Fase 5 — Groups (ATUAL)
+**Pré-requisito:** Fase 2 concluída (JWT) ✅
 **Critério de done:**
 - [ ] POST /groups (incluindo imageUrl vinda do S3 group-assets)
 - [ ] PUT /groups/:id
@@ -92,8 +98,17 @@
 
 ## Contexto de Sessão
 ```
-Última sessão: 17/03/2026
-O que foi feito: Fase 2 concluída — auth-service completo com UserRole, JWT, refresh token, profile CRUD e endpoint de promoção de admin
-Próxima tarefa: Fase 3 — workout-service com autenticação JWT
+Última sessão: 11/04/2026
+O que foi feito: Fase 4 concluída e validada — Progression Engine completo.
+  - AchievementDefinition: POST/GET/PATCH toggle (ADMIN)
+  - S3: user-level-thresholds.json carregado no startup com fallback em memória
+  - pathStyleAccessEnabled(true) no S3Client para funcionar com LocalStack
+  - XP engine: RUNNING = distanceKm × 10, STRENGTH = durationMin × 1
+  - Streak rastreado via lastWorkoutDate na entidade Progression
+  - LevelUp e AchievementUnlocked publicados no NotificationTopic
+  - Regras suportadas: STREAK_N, VOLUME_N, LEVEL_N
+  - GET /progression/:userId retorna achievements com title e description via @ManyToOne EAGER
+Próxima tarefa: Fase 5 — Groups
+  Começar por: POST /groups, PUT /groups/:id, POST /groups/:id/join, DELETE /groups/:id/leave
 Bloqueios: Nenhum
 ```
