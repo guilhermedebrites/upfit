@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -17,6 +18,10 @@ import java.util.UUID;
 public class GroupController {
 
     private final GroupService groupService;
+
+    // ─────────────────────────────────────────────────────────
+    // Escrita
+    // ─────────────────────────────────────────────────────────
 
     @PostMapping("/groups")
     public ResponseEntity<GroupResponse> createGroup(
@@ -56,5 +61,40 @@ public class GroupController {
     @GetMapping("/groups/upload-url")
     public ResponseEntity<PresignedUrlResponse> getUploadUrl(@RequestParam String filename) {
         return ResponseEntity.ok(groupService.getUploadUrl(filename));
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Consulta
+    // ─────────────────────────────────────────────────────────
+
+    @GetMapping("/groups")
+    public ResponseEntity<List<GroupResponse>> listAll() {
+        return ResponseEntity.ok(groupService.listAll());
+    }
+
+    @GetMapping("/groups/my")
+    public ResponseEntity<List<GroupResponse>> listMyGroups(
+            @AuthenticationPrincipal String userIdStr) {
+        return ResponseEntity.ok(groupService.listByUser(UUID.fromString(userIdStr)));
+    }
+
+    @GetMapping("/groups/{id}")
+    public ResponseEntity<GroupDetailResponse> getGroupDetail(@PathVariable UUID id) {
+        return ResponseEntity.ok(groupService.getGroupDetail(id));
+    }
+
+    @GetMapping("/groups/{id}/members")
+    public ResponseEntity<List<MemberResponse>> getMembers(@PathVariable UUID id) {
+        return ResponseEntity.ok(groupService.getMembers(id));
+    }
+
+    @GetMapping("/groups/{id}/ranking")
+    public ResponseEntity<List<MemberResponse>> getRanking(@PathVariable UUID id) {
+        return ResponseEntity.ok(groupService.getRanking(id));
+    }
+
+    @GetMapping("/groups/{id}/feed")
+    public ResponseEntity<List<FeedEntryResponse>> getFeed(@PathVariable UUID id) {
+        return ResponseEntity.ok(groupService.getFeed(id));
     }
 }

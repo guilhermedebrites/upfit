@@ -4,8 +4,10 @@ import br.com.upfit.groupservice.config.GroupLevelThresholdService;
 import br.com.upfit.groupservice.dto.*;
 import br.com.upfit.groupservice.messaging.NotificationEventPublisher;
 import br.com.upfit.groupservice.model.Group;
+import br.com.upfit.groupservice.model.GroupFeedEntry;
 import br.com.upfit.groupservice.model.GroupMembership;
 import br.com.upfit.groupservice.model.GroupRole;
+import br.com.upfit.groupservice.repository.GroupFeedEntryRepository;
 import br.com.upfit.groupservice.repository.GroupMembershipRepository;
 import br.com.upfit.groupservice.repository.GroupRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -31,6 +34,7 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final GroupMembershipRepository membershipRepository;
+    private final GroupFeedEntryRepository feedEntryRepository;
     private final GroupLevelThresholdService levelThresholdService;
     private final NotificationEventPublisher eventPublisher;
     private final S3Presigner s3Presigner;
@@ -41,8 +45,17 @@ public class GroupService {
     @Value("${aws.endpoint:}")
     private String awsEndpoint;
 
+    // ─────────────────────────────────────────────────────────
+    // Escrita
+    // ─────────────────────────────────────────────────────────
+
     @Transactional
     public GroupResponse createGroup(UUID creatorId, CreateGroupRequest request) {
+        if (membershipRepository.existsByUserIdAndRole(creatorId, GroupRole.OWNER)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "User is already OWNER of another group");
+        }
+
         Group group = new Group();
         group.setName(request.name());
         group.setDescription(request.description());
@@ -70,7 +83,8 @@ public class GroupService {
                 .orElse(false);
 
         if (!isPlatformAdmin && !isOwner) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only OWNER or platform ADMIN can edit the group");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Only OWNER or platform ADMIN can edit the group");
         }
 
         if (request.name() != null) group.setName(request.name());
@@ -128,6 +142,74 @@ public class GroupService {
         return new PresignedUrlResponse(presignedUrl, objectUrl);
     }
 
+    // ─────────────────────────────────────────────────────────
+    // Consulta
+    // ─────────────────────────────────────────────────────────
+
+    public List<GroupResponse> listAll() {
+        return groupRepository.findAll().stream()
+                .map(GroupResponse::from)
+                .toList();
+    }
+
+    public List<GroupResponse> listByUser(UUID userId) {
+        return membershipRepository.findByUserId(userId).stream()
+                .map(m -> groupRepository.findById(m.getGroupId()).orElse(null))
+                .filter(Objects::nonNull)
+                .map(GroupResponse::from)
+                .toList();
+    }
+
+    public GroupDetailResponse getGroupDetail(UUID groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+
+        List<GroupLevelThresholdService.GroupLevelThreshold> thresholds = levelThresholdService.getThresholds();
+        int currentLevel = group.getGroupLevel();
+
+        int currentLevelXpRequired = thresholds.stream()
+                .filter(t -> t.level() == currentLevel)
+                .mapToInt(GroupLevelThresholdService.GroupLevelThreshold::groupXpRequired)
+                .findFirst()
+                .orElse(0);
+
+        int nextLevelXpRequired = thresholds.stream()
+                .filter(t -> t.level() == currentLevel + 1)
+                .mapToInt(GroupLevelThresholdService.GroupLevelThreshold::groupXpRequired)
+                .findFirst()
+                .orElse(group.getGroupXp()); // nível máximo: progresso = 100%
+
+        return GroupDetailResponse.from(group, currentLevelXpRequired, nextLevelXpRequired);
+    }
+
+    public List<MemberResponse> getMembers(UUID groupId) {
+        groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+        return membershipRepository.findByGroupId(groupId).stream()
+                .map(MemberResponse::from)
+                .toList();
+    }
+
+    public List<MemberResponse> getRanking(UUID groupId) {
+        groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+        return membershipRepository.findByGroupIdOrderByGroupScoreDesc(groupId).stream()
+                .map(MemberResponse::from)
+                .toList();
+    }
+
+    public List<FeedEntryResponse> getFeed(UUID groupId) {
+        groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+        return feedEntryRepository.findTop10ByGroupIdOrderByRecordedAtDesc(groupId).stream()
+                .map(FeedEntryResponse::from)
+                .toList();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Queue consumer
+    // ─────────────────────────────────────────────────────────
+
     @Transactional
     public void processWorkoutRecorded(WorkoutRecordedEvent event) {
         List<GroupMembership> memberships = membershipRepository.findByUserId(event.userId());
@@ -142,6 +224,7 @@ public class GroupService {
             Group group = groupRepository.findById(membership.getGroupId()).orElse(null);
             if (group == null) continue;
 
+            // Atualiza XP e nível do grupo
             group.setGroupXp(group.getGroupXp() + xpGained);
             int oldLevel = group.getGroupLevel();
             int newLevel = levelThresholdService.calculateLevel(group.getGroupXp());
@@ -152,6 +235,17 @@ public class GroupService {
                 log.info("[group-service] Grupo {} subiu para nível {}", group.getId(), newLevel);
                 eventPublisher.publishGroupLevelUp(group.getId(), newLevel);
             }
+
+            // Salva entrada no feed do grupo
+            GroupFeedEntry feedEntry = new GroupFeedEntry();
+            feedEntry.setGroupId(group.getId());
+            feedEntry.setUserId(event.userId());
+            feedEntry.setWorkoutId(event.workoutId());
+            feedEntry.setType(event.type());
+            feedEntry.setDurationMin(event.durationMin());
+            feedEntry.setCaloriesBurned(event.caloriesBurned());
+            feedEntry.setDistanceKm(event.distanceKm());
+            feedEntryRepository.save(feedEntry);
         }
     }
 
