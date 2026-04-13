@@ -177,9 +177,26 @@ role: GroupRole
 groupScore: int         ← XP contribuído pelo membro ao grupo
 ```
 
+**GroupFeedEntry** → tabela `group_feed_entries` (feed de treinos do grupo)
+```
+id: UUID
+groupId: UUID
+userId: UUID
+workoutId: UUID
+type: String            ← "RUNNING" ou "STRENGTH"
+durationMin: int
+caloriesBurned: Double
+distanceKm: Double      ← null se STRENGTH
+recordedAt: DateTime
+```
+
 > `imageUrl` armazena a URL do objeto no S3. O upload é feito diretamente no S3 pelo cliente.
 >
 > **XP do grupo:** ao receber `WorkoutRecorded` via `GroupQueue`, o `group-service` verifica se o `userId` é membro ativo. Se sim, incrementa `groupScore` do membro e `groupXp` do grupo, depois recalcula `groupLevel`.
+>
+> **Feed do grupo:** ao processar `WorkoutRecorded`, o `GroupQueueListener` também salva uma `GroupFeedEntry` para cada grupo do qual o usuário é membro, permitindo exibir os treinos recentes dos membros ordenados por `recordedAt DESC`.
+>
+> **Restrição de OWNER:** um usuário só pode ser OWNER de um grupo por vez. Validado no `POST /groups` antes de criar.
 >
 > **Thresholds de nível do grupo:** carregados do S3 no startup do serviço.
 > Arquivo: `s3://upfit-config/group-level-thresholds.json`
@@ -270,6 +287,7 @@ group-level-thresholds.json  → lido por group-service
 | User | GroupMembership | 1:0..* |
 | User | ChallengeParticipation | 1:0..* |
 | Group | GroupMembership | 1:0..* |
+| Group | GroupFeedEntry | 1:0..* |
 | Challenge | ChallengeParticipation | 1:0..* |
 | Progression | Achievement | 1:0..* |
 | AchievementDefinition | Achievement | 1:0..* |
@@ -285,7 +303,7 @@ group-level-thresholds.json  → lido por group-service
 auth-service        → User, Profile, RefreshToken              | S3: profile-assets
 workout-service     → Workout, RunningWorkout, StrengthWorkout, ExerciseEntry
 progression-service → Progression, AchievementDefinition, Achievement | S3: upfit-config (leitura)
-group-service       → Group, GroupMembership                   | S3: group-assets, upfit-config (leitura)
+group-service       → Group, GroupMembership, GroupFeedEntry    | S3: group-assets, upfit-config (leitura)
 challenge-service   → Challenge, ChallengeParticipation
 notification-service → Notification
 ```

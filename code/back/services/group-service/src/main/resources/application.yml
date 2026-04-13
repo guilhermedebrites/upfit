@@ -18,10 +18,26 @@ spring:
       hibernate:
         format_sql: false
 
+jwt:
+  secret: ${JWT_SECRET}
+
 aws:
   endpoint: ${AWS_ENDPOINT:}
   region: ${AWS_REGION:us-east-1}
+  s3:
+    bucket:
+      config: ${S3_CONFIG_BUCKET:upfit-config}
+      group-assets: ${S3_GROUP_ASSETS_BUCKET:group-assets}
+
+sqs:
+  queue:
+    group-url: ${SQS_GROUP_QUEUE_URL}
+
+sns:
+  topic:
+    notification-arn: ${NOTIFICATION_TOPIC_ARN}
 
 logging:
   level:
     root: INFO
+    br.com.upfit: INFO

@@ -68,16 +68,30 @@
 
 ---
 
-## Fase 5: Groups (ATUAL)
-- [ ] GET /groups/upload-url?filename=... → presigned URL para upload no S3 (group-assets)
-- [ ] POST /groups (incluindo imageUrl vinda do S3 group-assets)
-- [ ] PUT /groups/:id
-- [ ] POST /groups/:id/join
-- [ ] DELETE /groups/:id/leave
-- [ ] Carregar group-level-thresholds.json do S3 (upfit-config) no startup
-- [ ] Consumir GroupQueue: incrementar groupScore do membro e groupXp do grupo
-- [ ] Recalcular groupLevel usando thresholds do S3
-- [ ] Validado: criar grupo → entrar → fazer treino → groupXp atualizado
+## Fase 5: Groups 🔄 (ATUAL)
+- [x] Entidades JPA: Group (tabela `groups`) e GroupMembership (tabela `group_memberships`)
+- [x] POST /groups — criador entra automaticamente como OWNER
+- [x] PUT /groups/:id — somente OWNER do grupo ou ADMIN da plataforma
+- [x] POST /groups/:id/join — cria GroupMembership com role MEMBER, publica MemberJoined
+- [x] DELETE /groups/:id/leave — OWNER não pode sair, publica MemberLeft
+- [x] GET /groups/upload-url?filename= — presigned URL via S3Presigner (5 min), bucket group-assets
+- [x] group-level-thresholds.json carregado do S3 (upfit-config) no startup com fallback em memória
+- [x] GroupQueue: WorkoutRecorded → incrementa groupScore do membro e groupXp do grupo
+- [x] groupLevel recalculado usando thresholds do S3
+- [x] GroupLevelUp publicado no NotificationTopic quando nível sobe
+- [x] MemberJoined e MemberLeft publicados no NotificationTopic
+- [x] JWT protection idêntica ao progression-service
+- [x] docker-compose atualizado com JWT_SECRET, SQS_GROUP_QUEUE_URL, NOTIFICATION_TOPIC_ARN, S3_GROUP_ASSETS_BUCKET, S3_CONFIG_BUCKET
+- [ ] Entidade JPA: GroupFeedEntry (tabela `group_feed_entries`)
+- [ ] GroupQueueListener: salvar GroupFeedEntry ao processar WorkoutRecorded
+- [ ] POST /groups: validar que userId não é OWNER de outro grupo antes de criar
+- [ ] GET /groups — lista todos os grupos
+- [ ] GET /groups/my — grupos que o usuário autenticado participa
+- [ ] GET /groups/:id — detalhes do grupo (nome, nível, XP, progresso para próximo nível)
+- [ ] GET /groups/:id/members — lista de membros com groupScore e role
+- [ ] GET /groups/:id/ranking — membros ordenados por groupScore DESC
+- [ ] GET /groups/:id/feed — 10 treinos mais recentes (ORDER BY recordedAt DESC LIMIT 10)
+- [ ] Validado: criar grupo → entrar → fazer treino → feed e ranking atualizados
 
 ---
 
