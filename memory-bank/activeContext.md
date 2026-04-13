@@ -1,7 +1,7 @@
 # UpFit — Active Context
 
 ## Estado Atual
-**Fase 5: Groups — ATUAL (pendências de consulta e feed)**
+**Fase 6: Challenges — ATUAL**
 
 ### Concluído (Fase 1) ✅ 17/03/2026
 - ✅ Todos os 6 serviços respondem GET /health
@@ -43,33 +43,26 @@
 - ✅ AchievementUnlocked publicado quando regra atingida (STREAK_N, VOLUME_N, LEVEL_N)
 - ✅ GET /progression/:userId retorna XP, nível, streak e achievements com title e description
 
-### Em andamento (Fase 5) 🔄 12/04/2026
-**Implementado:**
-- ✅ Entidades JPA: Group (tabela `groups`) e GroupMembership (tabela `group_memberships`)
-- ✅ POST /groups — criador entra automaticamente como OWNER
+### Concluído (Fase 5) ✅ 13/04/2026
+- ✅ Entidades JPA: Group, GroupMembership, GroupFeedEntry
+- ✅ POST /groups — criador entra automaticamente como OWNER; valida OWNER único por usuário
 - ✅ PUT /groups/:id — somente OWNER do grupo ou ADMIN da plataforma
 - ✅ POST /groups/:id/join — cria GroupMembership com role MEMBER, publica MemberJoined
 - ✅ DELETE /groups/:id/leave — OWNER não pode sair, publica MemberLeft
 - ✅ GET /groups/upload-url?filename= — presigned URL via S3Presigner (5 min), bucket group-assets
+- ✅ GET /groups — lista todos os grupos
+- ✅ GET /groups/my — grupos que o usuário participa (userId do JWT)
+- ✅ GET /groups/:id — detalhes com xpToNextLevel, currentLevelXpRequired, nextLevelXpRequired, progressPercent
+- ✅ GET /groups/:id/members — lista de membros com groupScore e role
+- ✅ GET /groups/:id/ranking — membros ordenados por groupScore DESC
+- ✅ GET /groups/:id/feed — 10 treinos mais recentes (findTop10ByGroupIdOrderByRecordedAtDesc)
 - ✅ group-level-thresholds.json carregado do S3 (upfit-config) no startup com fallback em memória
-- ✅ GroupQueue: WorkoutRecorded → incrementa groupScore do membro e groupXp do grupo
-- ✅ groupLevel recalculado usando thresholds do S3
-- ✅ GroupLevelUp publicado no NotificationTopic quando nível sobe
-- ✅ MemberJoined e MemberLeft publicados no NotificationTopic
+- ✅ GroupQueue: WorkoutRecorded → incrementa groupScore + groupXp, recalcula groupLevel, salva GroupFeedEntry
+- ✅ GroupLevelUp, MemberJoined e MemberLeft publicados no NotificationTopic
 - ✅ JWT protection: mesmo padrão JwtProperties/JwtService/JwtAuthFilter/SecurityConfig
 - ✅ S3Client e S3Presigner com pathStyleAccessEnabled(true) para LocalStack
 - ✅ docker-compose.yml atualizado: JWT_SECRET, SQS_GROUP_QUEUE_URL, NOTIFICATION_TOPIC_ARN, S3_GROUP_ASSETS_BUCKET, S3_CONFIG_BUCKET
-
-**Pendente:**
-- [ ] Entidade JPA: GroupFeedEntry (tabela `group_feed_entries`)
-- [ ] GroupQueueListener: salvar GroupFeedEntry ao processar WorkoutRecorded
-- [ ] Restrição de OWNER: validar no POST /groups que userId não é OWNER de outro grupo
-- [ ] GET /groups — lista todos os grupos
-- [ ] GET /groups/my — grupos que o usuário participa (userId do JWT)
-- [ ] GET /groups/:id — detalhes do grupo (nome, nível, XP, progresso para próximo nível)
-- [ ] GET /groups/:id/members — lista de membros com groupScore e role
-- [ ] GET /groups/:id/ranking — membros ordenados por groupScore DESC
-- [ ] GET /groups/:id/feed — 10 treinos mais recentes (ORDER BY recordedAt DESC LIMIT 10)
+- ✅ Validado end-to-end: criar grupo → entrar → fazer treino → feed e ranking atualizados
 
 ---
 
@@ -79,9 +72,9 @@
 
 ### Fase 4 — Progression Engine ✅ CONCLUÍDA (11/04/2026)
 
-### Fase 5 — Groups 🔄 EM ANDAMENTO (12/04/2026)
+### Fase 5 — Groups ✅ CONCLUÍDA (13/04/2026)
 
-### Fase 6 — Challenges
+### Fase 6 — Challenges (ATUAL)
 **Pré-requisito:** Fase 2 concluída (JWT) ✅
 **Critério de done:**
 - [ ] POST /challenges (ADMIN)
@@ -119,19 +112,15 @@
 
 ## Contexto de Sessão
 ```
-Última sessão: 12/04/2026
-O que foi feito: Fase 5 parcialmente implementada + decisões de domínio registradas.
-  - Implementado: POST/PUT /groups, POST/DELETE join|leave, GET upload-url,
-    GroupQueue consumer (XP), GroupLevelThresholdService, NotificationEventPublisher,
-    JWT protection, docker-compose atualizado
-  - Registrado (pendente de implementação):
-    - Entidade GroupFeedEntry (group_feed_entries) — feed de treinos do grupo
-    - GroupQueueListener deve também salvar GroupFeedEntry ao processar WorkoutRecorded
-    - Restrição: usuário só pode ser OWNER de um grupo por vez (validar no POST /groups)
-    - GET /groups, GET /groups/my, GET /groups/:id
-    - GET /groups/:id/members, GET /groups/:id/ranking, GET /groups/:id/feed
-Próxima tarefa: Fase 5 (pendências) — implementar GroupFeedEntry + endpoints de consulta
-  Começar por: GroupFeedEntry (model + repository), atualizar GroupQueueListener,
-  validação de OWNER único, novos endpoints no GroupController
+Última sessão: 13/04/2026
+O que foi feito: Fase 5 concluída e validada — group-service totalmente completo.
+  - GroupFeedEntry: model + repository + salvo pelo processWorkoutRecorded
+  - POST /groups: restrição de OWNER único validada (409 Conflict se já é OWNER)
+  - GET /groups, GET /groups/my, GET /groups/:id (xpToNextLevel, progressPercent)
+  - GET /groups/:id/members, GET /groups/:id/ranking, GET /groups/:id/feed
+  - Validado end-to-end: criar grupo → entrar → fazer treino → feed e ranking atualizados
+Próxima tarefa: Fase 6 — Challenges
+  Começar por: entidades JPA (Challenge, ChallengeParticipation), POST /challenges (ADMIN),
+  POST /challenges/:id/join, ChallengeQueue consumer, ChallengeCompleted event no NotificationTopic
 Bloqueios: Nenhum
 ```

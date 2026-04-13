@@ -68,7 +68,7 @@
 
 ---
 
-## Fase 5: Groups 🔄 (ATUAL)
+## Fase 5: Groups ✅ CONCLUÍDA (13/04/2026)
 - [x] Entidades JPA: Group (tabela `groups`) e GroupMembership (tabela `group_memberships`)
 - [x] POST /groups — criador entra automaticamente como OWNER
 - [x] PUT /groups/:id — somente OWNER do grupo ou ADMIN da plataforma
@@ -82,20 +82,20 @@
 - [x] MemberJoined e MemberLeft publicados no NotificationTopic
 - [x] JWT protection idêntica ao progression-service
 - [x] docker-compose atualizado com JWT_SECRET, SQS_GROUP_QUEUE_URL, NOTIFICATION_TOPIC_ARN, S3_GROUP_ASSETS_BUCKET, S3_CONFIG_BUCKET
-- [ ] Entidade JPA: GroupFeedEntry (tabela `group_feed_entries`)
-- [ ] GroupQueueListener: salvar GroupFeedEntry ao processar WorkoutRecorded
-- [ ] POST /groups: validar que userId não é OWNER de outro grupo antes de criar
-- [ ] GET /groups — lista todos os grupos
-- [ ] GET /groups/my — grupos que o usuário autenticado participa
-- [ ] GET /groups/:id — detalhes do grupo (nome, nível, XP, progresso para próximo nível)
-- [ ] GET /groups/:id/members — lista de membros com groupScore e role
-- [ ] GET /groups/:id/ranking — membros ordenados por groupScore DESC
-- [ ] GET /groups/:id/feed — 10 treinos mais recentes (ORDER BY recordedAt DESC LIMIT 10)
-- [ ] Validado: criar grupo → entrar → fazer treino → feed e ranking atualizados
+- [x] Entidade JPA: GroupFeedEntry (tabela `group_feed_entries`)
+- [x] GroupService.processWorkoutRecorded: salva GroupFeedEntry por grupo ao processar WorkoutRecorded
+- [x] POST /groups: valida que userId não é OWNER de outro grupo (409 Conflict)
+- [x] GET /groups — lista todos os grupos
+- [x] GET /groups/my — grupos que o usuário autenticado participa (userId do JWT)
+- [x] GET /groups/:id — detalhes com xpToNextLevel, currentLevelXpRequired, nextLevelXpRequired, progressPercent
+- [x] GET /groups/:id/members — lista de membros com groupScore e role
+- [x] GET /groups/:id/ranking — membros ordenados por groupScore DESC
+- [x] GET /groups/:id/feed — 10 treinos mais recentes (findTop10ByGroupIdOrderByRecordedAtDesc)
+- [x] Validado end-to-end: criar grupo → entrar → fazer treino → feed e ranking atualizados
 
 ---
 
-## Fase 6: Challenges (FUTURO)
+## Fase 6: Challenges (ATUAL)
 - [ ] POST /challenges
 - [ ] POST /challenges/join
 - [ ] Consumir ChallengeQueue: atualizar currentProgress das participações ativas do usuário
