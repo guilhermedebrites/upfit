@@ -117,13 +117,21 @@ GET   /health
 
 ### group-service (:8084)
 ```
-POST   /groups                           → cria grupo
-PUT    /groups/:id                       → edita grupo (nome, descrição, meta)
+POST   /groups                           → cria grupo (userId vira OWNER automaticamente)
+PUT    /groups/:id                       → edita grupo — somente OWNER do grupo ou ADMIN da plataforma
 POST   /groups/:id/join                  → entra no grupo
-DELETE /groups/:id/leave                 → sai do grupo
+DELETE /groups/:id/leave                 → sai do grupo (OWNER não pode sair)
 GET    /groups/upload-url?filename=...   → gera presigned URL para upload no S3 (group-assets) — JWT obrigatório — válida 5 min
+GET    /groups                           → lista todos os grupos
+GET    /groups/my                        → grupos que o usuário autenticado participa (userId extraído do JWT)
+GET    /groups/:id                       → detalhes do grupo (nome, nível, XP, progresso para próximo nível)
+GET    /groups/:id/members               → lista de membros com groupScore e role
+GET    /groups/:id/ranking               → membros ordenados por groupScore DESC
+GET    /groups/:id/feed                  → 10 treinos mais recentes dos membros (ORDER BY recordedAt DESC LIMIT 10)
 GET    /health
 ```
+> **Restrição de OWNER:** um usuário só pode ser OWNER de um grupo por vez. Validado no `POST /groups` antes de criar.
+> **Feed:** populado via `GroupFeedEntry` salva pelo `GroupQueueListener` ao processar `WorkoutRecorded`.
 
 ### challenge-service (:8085)
 ```

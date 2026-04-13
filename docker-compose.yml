@@ -158,10 +158,15 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/group_db
       DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-upfit-local-dev-secret-minimo-32-chars}
       AWS_ENDPOINT: ${AWS_ENDPOINT:-http://localstack:4566}
       AWS_REGION: ${AWS_REGION:-us-east-1}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-test}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-test}
+      SQS_GROUP_QUEUE_URL: http://localstack:4566/000000000000/GroupQueue
+      NOTIFICATION_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:NotificationTopic
+      S3_GROUP_ASSETS_BUCKET: group-assets
+      S3_CONFIG_BUCKET: upfit-config
     ports:
       - "8084:8084"
     networks:
