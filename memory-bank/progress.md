@@ -115,11 +115,16 @@
 
 ---
 
-## Fase 7: Notifications (FUTURO)
-- [ ] Consumir NotificationQueue (WorkoutRecorded, LevelUp, AchievementUnlocked, ChallengeCompleted)
-- [ ] Persistir Notification no banco
-- [ ] GET /notifications/:userId
-- [ ] Validado: fazer treino → notificação aparece no GET
+## Fase 7: Notifications ✅ CONCLUÍDA E VALIDADA (14/04/2026)
+- [x] Entidade JPA: Notification criada no notification_db
+- [x] Consumir NotificationQueue (WorkoutRecorded, LevelUp, AchievementUnlocked, ChallengeCompleted, GroupLevelUp, MemberJoined, MemberLeft)
+- [x] Persistir Notification no banco com título e mensagem por tipo de evento
+- [x] GET /notifications/:userId — lista notificações não lidas (userId validado contra JWT)
+- [x] GET /notifications/:userId?all=true — histórico completo
+- [x] PATCH /notifications/:id/read — marca notificação como lida
+- [x] PATCH /notifications/read-all — marca todas as notificações do usuário como lidas
+- [x] Usuário só acessa suas próprias notificações (validação JWT)
+- [x] Validado: fazer treino → notificação aparece no GET
 
 ---
 
