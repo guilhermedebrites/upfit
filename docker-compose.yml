@@ -216,15 +216,22 @@ services:
     environment:
       PORT: 8086
       SERVICE_NAME: notification-service
+      DATABASE_URL: jdbc:postgresql://postgres:5432/notification_db
+      DATABASE_USERNAME: ${POSTGRES_USER:-postgres}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       AWS_ENDPOINT: ${AWS_ENDPOINT:-http://localstack:4566}
       AWS_REGION: ${AWS_REGION:-us-east-1}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-test}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-test}
+      JWT_SECRET: ${JWT_SECRET:-upfit-local-dev-secret-minimo-32-chars}
+      SQS_NOTIFICATION_QUEUE_URL: http://localstack:4566/000000000000/NotificationQueue
     ports:
       - "8086:8086"
     networks:
       - upfit-network
     depends_on:
+      postgres:
+        condition: service_healthy
       localstack:
         condition: service_healthy
 

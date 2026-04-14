@@ -157,9 +157,14 @@ GET    /health
 
 ### notification-service (:8086)
 ```
-GET /notifications/:userId  → lista notificações
-GET /health
+GET   /notifications/:userId           → lista notificações não lidas do usuário (padrão)
+GET   /notifications/:userId?all=true  → lista todas as notificações (histórico completo)
+PATCH /notifications/:id/read          → marca uma notificação como lida
+PATCH /notifications/read-all          → marca todas as notificações do usuário como lidas
+GET   /health
 ```
+> Todos os endpoints protegidos por JWT.
+> Usuário só pode acessar suas próprias notificações — `userId` do path validado contra `userId` do token (403 se diferente).
 
 ### Endpoints protegidos por role ADMIN
 ```

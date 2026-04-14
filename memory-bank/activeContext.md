@@ -1,7 +1,7 @@
 # UpFit — Active Context
 
 ## Estado Atual
-**Fase 7: Notifications — ATUAL**
+**Fase 8: Cloud — ATUAL**
 
 ### Concluído (Fase 1) ✅ 17/03/2026
 - ✅ Todos os 6 serviços respondem GET /health
@@ -82,6 +82,17 @@
 - ✅ Bucket challenge-assets criado no LocalStack (setup.sh)
 - ✅ Validado end-to-end: criar desafio → participar → fazer treino → progresso atualizado
 
+### Concluído (Fase 7) ✅ 14/04/2026
+- ✅ Entidade JPA: Notification criada no notification_db
+- ✅ NotificationQueue: consome WorkoutRecorded, LevelUp, AchievementUnlocked, ChallengeCompleted, GroupLevelUp, MemberJoined, MemberLeft
+- ✅ Persiste Notification no banco com título e mensagem por tipo de evento
+- ✅ GET /notifications/:userId — lista notificações não lidas (userId do path validado contra JWT)
+- ✅ GET /notifications/:userId?all=true — histórico completo
+- ✅ PATCH /notifications/:id/read — marca uma notificação como lida
+- ✅ PATCH /notifications/read-all — marca todas as notificações do usuário como lidas
+- ✅ Usuário só acessa suas próprias notificações (validação JWT)
+- ✅ Validado: fazer treino → notificação aparece no GET
+
 ---
 
 ## Fases (Core Domains)
@@ -94,13 +105,16 @@
 
 ### Fase 6 — Challenges ✅ CONCLUÍDA (14/04/2026)
 
-### Fase 7 — Notifications
-**Pré-requisito:** Fases 4, 5 e 6 concluídas (eventos LevelUp, ChallengeCompleted)
+### Fase 7 — Notifications ✅ CONCLUÍDA (14/04/2026)
+
+### Fase 8 — Cloud
+**Pré-requisito:** Todas as fases de domínio concluídas
 **Critério de done:**
-- [ ] Consumir NotificationQueue (WorkoutRecorded, LevelUp, AchievementUnlocked, ChallengeCompleted, GroupLevelUp, MemberJoined, MemberLeft)
-- [ ] Persistir Notification no banco
-- [ ] GET /notifications/:userId
-- [ ] Validado: fazer treino → notificação aparece no GET
+- [ ] Terraform / CDK para infra AWS
+- [ ] EC2 + Docker deploy
+- [ ] RDS, SQS, SNS reais
+- [ ] CI/CD pipeline
+- [ ] CloudWatch logs e alertas
 
 ---
 
@@ -124,12 +138,17 @@
 ## Contexto de Sessão
 ```
 Última sessão: 14/04/2026
-O que foi feito: Fase 6 — challenge-service concluído e validado.
-  - GET /challenges atualizado: filtros ?type e ?participating=true|false combinados
-  - participating=true retorna myParticipation embutido em cada item da lista
-  - Retorno da listagem alterado para List<ChallengeDetailResponse> (consistente com GET /:id)
-  - Validado end-to-end: criar desafio → participar → fazer treino → progresso atualizado
-Próxima tarefa: Fase 7 — Notifications
-  Começar por: notification-service (consumir NotificationQueue, persistir Notification, GET /notifications/:userId)
+O que foi feito: Fase 7 — notification-service concluído e validado.
+  - Entidade JPA Notification + NotificationRepository
+  - NotificationQueueListener: consome e deleta mensagens da NotificationQueue
+  - NotificationService: processa 7 tipos de evento, persiste com título/mensagem por tipo
+  - GET /notifications/:userId (não lidas) e ?all=true (histórico)
+  - PATCH /notifications/:id/read e PATCH /notifications/read-all
+  - Validação de ownership em todos os endpoints (userId do JWT)
+  - notification_db adicionado ao infra/postgres/init.sql
+  - docker-compose atualizado: DATABASE_URL, JWT_SECRET, SQS_NOTIFICATION_QUEUE_URL
+  - Validado end-to-end: fazer treino → notificação aparece no GET
+Próxima tarefa: Fase 8 — Cloud
+  Começar por: definir estratégia de infra (Terraform ou CDK), provisionamento de RDS, SQS/SNS reais, EC2 + Docker, CI/CD
 Bloqueios: Nenhum
 ```
