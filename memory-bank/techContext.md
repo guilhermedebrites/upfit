@@ -69,10 +69,27 @@ lombok
 
 | Componente | Solução Local |
 |-----------|--------------|
+| API Gateway | Nginx (porta 8080) — substituto local do API Gateway AWS |
 | SQS/SNS/S3 | LocalStack |
 | PostgreSQL | Docker (postgres:15) |
 | Serviços | Docker Compose |
 
+> **Nginx como API Gateway local:** roteia cada path para o serviço correspondente na rede interna Docker. O app mobile usa `http://localhost:8080` como URL base em dev — os paths dos endpoints não mudam entre dev e produção.
+> Em produção, o Nginx é substituído pelo **AWS API Gateway**, mantendo os mesmos paths.
+> Configuração em `infra/nginx/nginx.conf`.
+>
+> **Roteamento Nginx:**
+> ```
+> /auth/**           → auth-service:8081
+> /profile/**        → auth-service:8081
+> /workouts/**       → workout-service:8082
+> /progression/**    → progression-service:8083
+> /achievements/**   → progression-service:8083
+> /groups/**         → group-service:8084
+> /challenges/**     → challenge-service:8085
+> /notifications/**  → notification-service:8086
+> ```
+>
 > Os buckets `profile-assets`, `group-assets`, `challenge-assets` e `upfit-config` devem ser criados no LocalStack via `infra/localstack/setup.sh`, junto com os arquivos JSON de thresholds iniciais.
 
 ## Convenções de Nomenclatura

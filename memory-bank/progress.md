@@ -152,3 +152,5 @@
 | 18/03 | NotificationQueue subscriber apenas do NotificationTopic | Desacopla notification-service de eventos de domínio |
 | 18/03 | UserRole: USER e ADMIN | ADMIN cria desafios e definições de conquistas; role embutido no JWT |
 | 18/03 | AchievementDefinition: entidade separada cadastrada por ADMIN | progression-service avalia regras ao processar WorkoutRecorded |
+| 14/04 | Nginx como API Gateway local (porta 8080) | Simula AWS API Gateway em dev; app mobile usa URL base única |
+| 14/04 | App mobile usa URL base única (localhost:8080 em dev) | Paths não mudam entre dev e prod; só a base URL muda |

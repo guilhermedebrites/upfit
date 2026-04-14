@@ -228,6 +228,23 @@ services:
       localstack:
         condition: service_healthy
 
+  nginx:
+    image: nginx:alpine
+    container_name: upfit-nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - upfit-network
+    depends_on:
+      - auth-service
+      - workout-service
+      - progression-service
+      - group-service
+      - challenge-service
+      - notification-service
+
 volumes:
   postgres-data:
   localstack-data:
