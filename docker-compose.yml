@@ -193,6 +193,10 @@ services:
       AWS_REGION: ${AWS_REGION:-us-east-1}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-test}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-test}
+      JWT_SECRET: ${JWT_SECRET:-upfit-local-dev-secret-minimo-32-chars}
+      SQS_CHALLENGE_QUEUE_URL: http://localstack:4566/000000000000/ChallengeQueue
+      NOTIFICATION_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:NotificationTopic
+      S3_CHALLENGE_ASSETS_BUCKET: challenge-assets
     ports:
       - "8085:8085"
     networks:

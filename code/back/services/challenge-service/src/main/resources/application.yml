@@ -21,6 +21,20 @@ spring:
 aws:
   endpoint: ${AWS_ENDPOINT:}
   region: ${AWS_REGION:us-east-1}
+  s3:
+    bucket:
+      challenge-assets: ${S3_CHALLENGE_ASSETS_BUCKET:challenge-assets}
+
+jwt:
+  secret: ${JWT_SECRET}
+
+sqs:
+  queue:
+    challenge-url: ${SQS_CHALLENGE_QUEUE_URL}
+
+sns:
+  topic:
+    notification-arn: ${NOTIFICATION_TOPIC_ARN}
 
 logging:
   level:

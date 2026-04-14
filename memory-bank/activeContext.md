@@ -1,7 +1,7 @@
 # UpFit — Active Context
 
 ## Estado Atual
-**Fase 6: Challenges — ATUAL**
+**Fase 7: Notifications — ATUAL**
 
 ### Concluído (Fase 1) ✅ 17/03/2026
 - ✅ Todos os 6 serviços respondem GET /health
@@ -64,6 +64,24 @@
 - ✅ docker-compose.yml atualizado: JWT_SECRET, SQS_GROUP_QUEUE_URL, NOTIFICATION_TOPIC_ARN, S3_GROUP_ASSETS_BUCKET, S3_CONFIG_BUCKET
 - ✅ Validado end-to-end: criar grupo → entrar → fazer treino → feed e ranking atualizados
 
+### Concluído (Fase 6) ✅ 14/04/2026
+- ✅ Entidades JPA: Challenge (type, requiredLevel, coverImageUrl, goalTarget) e ChallengeParticipation
+- ✅ POST /challenges (ADMIN) — cria desafio com type, requiredLevel, coverImageUrl, goalTarget
+- ✅ GET /challenges — lista desafios ativos com filtros opcionais:
+  - ?type=GLOBAL|DAILY|WEEKLY filtra por tipo
+  - ?participating=true retorna desafios que o usuário participa + myParticipation embutido por item
+  - ?participating=false retorna desafios que o usuário NÃO participa
+  - params combinados: ?type=GLOBAL&participating=true
+- ✅ GET /challenges/:id — detalhes + myParticipation embutido (currentProgress, completed, progressPercent)
+- ✅ POST /challenges/:id/join — valida requiredLevel contra userLevel recebido no body
+- ✅ DELETE /challenges/:id/leave — somente se completed = false
+- ✅ GET /challenges/upload-url?filename= — presigned URL para challenge-assets (ADMIN)
+- ✅ @Scheduled diário (0 0 0 * * *): expirar desafios com endDate < hoje e status = ACTIVE → EXPIRED
+- ✅ ChallengeQueue: WorkoutRecorded → atualiza currentProgress das participações ativas
+- ✅ Quando meta atingida → publica ChallengeCompleted no NotificationTopic
+- ✅ Bucket challenge-assets criado no LocalStack (setup.sh)
+- ✅ Validado end-to-end: criar desafio → participar → fazer treino → progresso atualizado
+
 ---
 
 ## Fases (Core Domains)
@@ -74,14 +92,7 @@
 
 ### Fase 5 — Groups ✅ CONCLUÍDA (13/04/2026)
 
-### Fase 6 — Challenges (ATUAL)
-**Pré-requisito:** Fase 2 concluída (JWT) ✅
-**Critério de done:**
-- [ ] POST /challenges (ADMIN)
-- [ ] POST /challenges/:id/join
-- [ ] Consumir ChallengeQueue: ao receber WorkoutRecorded, atualizar currentProgress das participações ativas do usuário
-- [ ] Quando meta atingida → publicar ChallengeCompleted no NotificationTopic
-- [ ] Validado: criar desafio → participar → fazer treino → progresso atualizado
+### Fase 6 — Challenges ✅ CONCLUÍDA (14/04/2026)
 
 ### Fase 7 — Notifications
 **Pré-requisito:** Fases 4, 5 e 6 concluídas (eventos LevelUp, ChallengeCompleted)
@@ -112,15 +123,13 @@
 
 ## Contexto de Sessão
 ```
-Última sessão: 13/04/2026
-O que foi feito: Fase 5 concluída e validada — group-service totalmente completo.
-  - GroupFeedEntry: model + repository + salvo pelo processWorkoutRecorded
-  - POST /groups: restrição de OWNER único validada (409 Conflict se já é OWNER)
-  - GET /groups, GET /groups/my, GET /groups/:id (xpToNextLevel, progressPercent)
-  - GET /groups/:id/members, GET /groups/:id/ranking, GET /groups/:id/feed
-  - Validado end-to-end: criar grupo → entrar → fazer treino → feed e ranking atualizados
-Próxima tarefa: Fase 6 — Challenges
-  Começar por: entidades JPA (Challenge, ChallengeParticipation), POST /challenges (ADMIN),
-  POST /challenges/:id/join, ChallengeQueue consumer, ChallengeCompleted event no NotificationTopic
+Última sessão: 14/04/2026
+O que foi feito: Fase 6 — challenge-service concluído e validado.
+  - GET /challenges atualizado: filtros ?type e ?participating=true|false combinados
+  - participating=true retorna myParticipation embutido em cada item da lista
+  - Retorno da listagem alterado para List<ChallengeDetailResponse> (consistente com GET /:id)
+  - Validado end-to-end: criar desafio → participar → fazer treino → progresso atualizado
+Próxima tarefa: Fase 7 — Notifications
+  Começar por: notification-service (consumir NotificationQueue, persistir Notification, GET /notifications/:userId)
 Bloqueios: Nenhum
 ```

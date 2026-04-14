@@ -30,6 +30,10 @@ enum AchievementType {
 enum ChallengeStatus {
     ACTIVE, COMPLETED, EXPIRED
 }
+
+enum ChallengeType {
+    GLOBAL, DAILY, WEEKLY
+}
 ```
 
 ---
@@ -217,6 +221,9 @@ rewardXp: int
 startDate: DateTime
 endDate: DateTime
 status: ChallengeStatus
+type: ChallengeType     ← GLOBAL, DAILY ou WEEKLY
+requiredLevel: int      ← null = sem restrição de nível mínimo
+coverImageUrl: String   ← URL da capa no S3 (bucket: challenge-assets)
 ```
 
 **ChallengeParticipation** → tabela `challenge_participations` (associação User ↔ Challenge)
@@ -230,6 +237,12 @@ completedAt: DateTime
 ```
 
 > **Progresso no desafio:** ao receber `WorkoutRecorded` via `ChallengeQueue`, o `challenge-service` atualiza `currentProgress` de todas as participações ativas do usuário. Quando meta atingida → publica `ChallengeCompleted` no `NotificationTopic`.
+>
+> **Validação de nível:** ao participar (`POST /challenges/:id/join`), o `challenge-service` verifica se o nível do usuário (extraído do JWT) atende ao `requiredLevel`. Se não atender → 403 Forbidden.
+>
+> **Expiração automática:** `@Scheduled` diário no `challenge-service` busca desafios com `endDate < hoje` e `status = ACTIVE`, atualizando-os para `EXPIRED` automaticamente.
+>
+> `coverImageUrl` armazena a URL do objeto no S3. O upload é feito diretamente no S3 pelo cliente via presigned URL.
 
 ---
 
@@ -266,6 +279,7 @@ sentAt: DateTime
 |--------|------|---------|
 | `profile-assets` | auth-service | Fotos de perfil dos usuários |
 | `group-assets` | group-service | Imagens dos grupos |
+| `challenge-assets` | challenge-service | Capas dos desafios |
 | `upfit-config` | progression-service, group-service | Arquivos de configuração de negócio |
 
 ### Arquivos de configuração (`upfit-config`)
@@ -304,6 +318,6 @@ auth-service        → User, Profile, RefreshToken              | S3: profile-a
 workout-service     → Workout, RunningWorkout, StrengthWorkout, ExerciseEntry
 progression-service → Progression, AchievementDefinition, Achievement | S3: upfit-config (leitura)
 group-service       → Group, GroupMembership, GroupFeedEntry    | S3: group-assets, upfit-config (leitura)
-challenge-service   → Challenge, ChallengeParticipation
+challenge-service   → Challenge, ChallengeParticipation           | S3: challenge-assets
 notification-service → Notification
 ```

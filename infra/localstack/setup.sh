@@ -75,6 +75,7 @@ echo "[localstack] Criando buckets S3..."
 
 awslocal s3 mb s3://profile-assets
 awslocal s3 mb s3://group-assets
+awslocal s3 mb s3://challenge-assets
 awslocal s3 mb s3://upfit-config
 
 # ─────────────────────────────────────────────────────────────────────────

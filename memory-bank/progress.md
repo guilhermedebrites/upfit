@@ -95,12 +95,23 @@
 
 ---
 
-## Fase 6: Challenges (ATUAL)
-- [ ] POST /challenges
-- [ ] POST /challenges/join
-- [ ] Consumir ChallengeQueue: atualizar currentProgress das participações ativas do usuário
-- [ ] Quando meta atingida → publicar ChallengeCompleted no SNS
-- [ ] Validado: criar desafio → participar → fazer treino → progresso atualizado
+## Fase 6: Challenges ✅ CONCLUÍDA (14/04/2026)
+- [x] Entidades JPA: Challenge (com type, requiredLevel, coverImageUrl, goalTarget) e ChallengeParticipation
+- [x] POST /challenges (ADMIN) — com type, requiredLevel, coverImageUrl, goalTarget
+- [x] GET /challenges — lista desafios ativos com filtros opcionais:
+  - [x] ?type=GLOBAL|DAILY|WEEKLY filtra por tipo
+  - [x] ?participating=true → retorna desafios que o usuário participa + myParticipation embutido por item
+  - [x] ?participating=false → retorna desafios que o usuário NÃO participa
+  - [x] params combinados: ?type=GLOBAL&participating=true
+- [x] GET /challenges/:id — detalhes + myParticipation embutido (currentProgress, completed, progressPercent)
+- [x] POST /challenges/:id/join — valida requiredLevel contra userLevel recebido no body
+- [x] DELETE /challenges/:id/leave — somente se completed = false
+- [x] GET /challenges/upload-url?filename= — presigned URL para challenge-assets (ADMIN)
+- [x] @Scheduled diário (cron 0 0 0): expirar desafios com endDate < hoje e status = ACTIVE → EXPIRED
+- [x] Consumir ChallengeQueue: ao receber WorkoutRecorded, atualizar currentProgress das participações ativas
+- [x] Quando meta atingida → publicar ChallengeCompleted no NotificationTopic
+- [x] Bucket challenge-assets criado no LocalStack (setup.sh)
+- [x] Validado end-to-end: criar desafio → participar → fazer treino → progresso atualizado
 
 ---
 
