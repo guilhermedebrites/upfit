@@ -12,7 +12,7 @@
 | Mensageria publish | SNS — `WorkoutRecordedTopic` | workout-service publica treinos |
 | Mensageria publish | SNS — `NotificationTopic` | progression, challenge, group publicam eventos de notificação |
 | Mensageria consume | SQS (por serviço) | ProgressionQueue, ChallengeQueue, GroupQueue, NotificationQueue |
-| Storage assets | S3 (profile-assets, group-assets) |
+| Storage assets | S3 (profile-assets, group-assets, challenge-assets) |
 | Storage config | S3 (upfit-config) |
 | Monitoramento | Amazon CloudWatch |
 
@@ -22,6 +22,7 @@
 |--------|-----------|-------------|
 | `profile-assets` | Fotos de perfil dos usuários | auth-service (escrita URL), cliente (upload direto) |
 | `group-assets` | Imagens dos grupos | group-service (escrita URL), cliente (upload direto) |
+| `challenge-assets` | Capas dos desafios | challenge-service (escrita URL), cliente (upload direto) |
 | `upfit-config` | Arquivos de configuração de negócio | progression-service, group-service (leitura no startup) |
 
 ### Arquivos em `upfit-config`
@@ -72,7 +73,7 @@ lombok
 | PostgreSQL | Docker (postgres:15) |
 | Serviços | Docker Compose |
 
-> Os buckets `profile-assets`, `group-assets` e `upfit-config` devem ser criados no LocalStack via `infra/localstack/setup.sh`, junto com os arquivos JSON de thresholds iniciais.
+> Os buckets `profile-assets`, `group-assets`, `challenge-assets` e `upfit-config` devem ser criados no LocalStack via `infra/localstack/setup.sh`, junto com os arquivos JSON de thresholds iniciais.
 
 ## Convenções de Nomenclatura
 
@@ -135,10 +136,24 @@ GET    /health
 
 ### challenge-service (:8085)
 ```
-POST /challenges       → cria desafio
-POST /challenges/join  → participa de desafio
-GET  /health
+POST   /challenges                          → cria desafio (ADMIN — type, requiredLevel, coverImageUrl)
+GET    /challenges                          → lista desafios ativos (query params opcionais abaixo)
+GET    /challenges/:id                      → detalhes + myParticipation embutido { currentProgress, completed, progressPercent }
+POST   /challenges/:id/join                 → participa do desafio (valida requiredLevel contra userLevel do body)
+DELETE /challenges/:id/leave                → desiste do desafio (somente se completed = false)
+GET    /challenges/upload-url?filename=...  → presigned URL para capa no S3 (challenge-assets) — ADMIN — válida 5 min
+GET    /health
 ```
+> **Query params de GET /challenges:**
+> - `?type=GLOBAL|DAILY|WEEKLY` — filtra por tipo de desafio
+> - `?participating=true` — retorna apenas desafios em que o usuário autenticado participa; inclui `myParticipation` embutido `{ currentProgress, completed, progressPercent }` em cada item
+> - `?participating=false` — retorna apenas desafios que o usuário NÃO participa; `myParticipation` omitido/null
+> - Sem `participating`: retorna todos os desafios ativos
+> - Os dois params podem ser combinados: `?type=GLOBAL&participating=true`
+>
+> **Expiração automática:** `@Scheduled` diário busca desafios com `endDate < hoje` e `status = ACTIVE` e os marca como `EXPIRED`.
+> **Restrição de nível:** `requiredLevel = null` significa sem restrição. Se definido, usuário precisa ter `level >= requiredLevel` para participar.
+> **myParticipation:** incluído na resposta do `GET /challenges/:id`. Se o usuário não participa, retorna `null`. No `GET /challenges`, incluído apenas quando `participating=true`.
 
 ### notification-service (:8086)
 ```
@@ -150,16 +165,17 @@ GET /health
 ```
 POST /challenges                    → somente ADMIN pode criar desafios
 POST /achievements/definitions      → somente ADMIN pode cadastrar definições de conquistas
+GET  /challenges/upload-url         → somente ADMIN pode gerar presigned URL para challenge-assets
 ```
 > O role é extraído do JWT — sem chamada ao auth-service nos demais serviços.
 
 ### Fluxo de upload de imagens (presigned URL)
 ```
-1. Frontend chama GET /profile/upload-url?filename=foto.jpg  (ou /groups/upload-url)
+1. Frontend chama GET /profile/upload-url?filename=foto.jpg  (ou /groups/upload-url, /challenges/upload-url)
 2. Backend gera presigned URL via S3Presigner (AWS SDK v2) — válida 5 minutos
 3. Response: { "presignedUrl": "...", "objectUrl": "..." }
 4. Frontend faz PUT direto no S3 usando presignedUrl
-5. Frontend persiste objectUrl via PUT /profile/:userId ou POST /groups
+5. Frontend persiste objectUrl via PUT /profile/:userId, POST /groups ou POST /challenges
 ```
 > objectUrl = presignedUrl sem query string (parâmetros de assinatura).
 > Em dev local, a URL referencia http://localstack:4566 — substituir por http://localhost:4566 para testar no Postman/browser.
@@ -168,6 +184,7 @@ POST /achievements/definitions      → somente ADMIN pode cadastrar definiçõe
 ### Endpoints protegidos por role ADMIN — lista completa
 ```
 POST  /challenges                              → challenge-service
+GET   /challenges/upload-url                   → challenge-service
 POST  /achievements/definitions                → progression-service
 PATCH /achievements/definitions/:id/toggle    → progression-service
 ```
