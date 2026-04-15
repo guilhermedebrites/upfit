@@ -128,20 +128,22 @@ Cada serviço → container próprio
 
 ```
 upfit/
-├── docker-compose.yml          ← orquestra todos os serviços
-├── docker-compose.local.yml    ← sobrescritas para dev local
-├── .env.example
-├── memory-bank/                ← documentação viva do projeto
-├── services/
-│   ├── auth-service/
-│   │   ├── Dockerfile
-│   │   ├── .env.example
-│   │   └── src/
-│   ├── workout-service/
-│   ├── progression-service/
-│   ├── group-service/
-│   ├── challenge-service/
-│   └── notification-service/
-└── infra/
-    └── localstack/             ← scripts de setup das filas e tópicos locais
+└── code/
+    └── back/                        ← raiz do backend
+        ├── docker-compose.yml       ← orquestra todos os serviços
+        ├── memory-bank/             ← documentação viva do projeto
+        ├── services/
+        │   ├── auth-service/
+        │   │   ├── Dockerfile
+        │   │   ├── .env.example
+        │   │   └── src/
+        │   ├── workout-service/
+        │   ├── progression-service/
+        │   ├── group-service/
+        │   ├── challenge-service/
+        │   └── notification-service/
+        └── infra/
+            ├── localstack/          ← setup.sh: filas SQS, tópicos SNS, buckets S3
+            ├── nginx/               ← nginx.conf: API Gateway local (porta 8080)
+            └── postgres/            ← init.sql: criação dos bancos
 ```

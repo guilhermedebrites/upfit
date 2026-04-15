@@ -1,5 +1,3 @@
-version: "3.9"
-
 networks:
   upfit-network:
     driver: bridge
@@ -61,7 +59,7 @@ services:
 
   auth-service:
     build:
-      context: ./code/back/services/auth-service
+      context: ./services/auth-service
       dockerfile: Dockerfile
     container_name: upfit-auth
     restart: on-failure
@@ -90,7 +88,7 @@ services:
 
   workout-service:
     build:
-      context: ./code/back/services/workout-service
+      context: ./services/workout-service
       dockerfile: Dockerfile
     container_name: upfit-workout
     restart: on-failure
@@ -118,7 +116,7 @@ services:
 
   progression-service:
     build:
-      context: ./code/back/services/progression-service
+      context: ./services/progression-service
       dockerfile: Dockerfile
     container_name: upfit-progression
     restart: on-failure
@@ -148,7 +146,7 @@ services:
 
   group-service:
     build:
-      context: ./code/back/services/group-service
+      context: ./services/group-service
       dockerfile: Dockerfile
     container_name: upfit-group
     restart: on-failure
@@ -179,7 +177,7 @@ services:
 
   challenge-service:
     build:
-      context: ./code/back/services/challenge-service
+      context: ./services/challenge-service
       dockerfile: Dockerfile
     container_name: upfit-challenge
     restart: on-failure
@@ -209,7 +207,7 @@ services:
 
   notification-service:
     build:
-      context: ./code/back/services/notification-service
+      context: ./services/notification-service
       dockerfile: Dockerfile
     container_name: upfit-notification
     restart: on-failure

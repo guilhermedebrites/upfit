@@ -14,10 +14,10 @@ Container:    eclipse-temurin:21-jre-alpine
 
 ## Leia Sempre Primeiro
 Ao iniciar qualquer sessão neste projeto, leia os arquivos na seguinte ordem:
-1. `memory-bank/projectbrief.md`
-2. `memory-bank/activeContext.md`
-3. `memory-bank/systemPatterns.md`
-4. `memory-bank/domainModel.md` ← ao trabalhar em qualquer entidade JPA
+1. `code/back/memory-bank/projectbrief.md`
+2. `code/back/memory-bank/activeContext.md`
+3. `code/back/memory-bank/systemPatterns.md`
+4. `code/back/memory-bank/domainModel.md` ← ao trabalhar em qualquer entidade JPA
 
 ---
 
@@ -34,7 +34,7 @@ Ao iniciar qualquer sessão neste projeto, leia os arquivos na seguinte ordem:
 - Usar variáveis de ambiente para toda configuração (sem hardcode)
 - Manter cada serviço completamente isolado em sua pasta
 - Nomear eventos em PascalCase, serviços em kebab-case
-- Atualizar `memory-bank/activeContext.md` ao final de cada sessão
+- Atualizar `code/back/memory-bank/activeContext.md` ao final de cada sessão
 
 ---
 
@@ -65,7 +65,7 @@ Ao iniciar qualquer sessão neste projeto, leia os arquivos na seguinte ordem:
 ## Estrutura Obrigatória de cada Microserviço (Java/Spring Boot)
 
 ```
-code/back/services/<nome-service>/
+services/<nome-service>/
 ├── Dockerfile
 ├── .env.example
 ├── README.md
@@ -127,7 +127,7 @@ aws:
 
 
 ```
-services/<nome-service>/
+code/back/services/<nome-service>/
 ├── Dockerfile
 ├── .env.example          ← variáveis necessárias, sem valores reais
 ├── README.md             ← como rodar isolado

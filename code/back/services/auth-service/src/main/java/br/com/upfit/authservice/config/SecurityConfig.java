@@ -23,7 +23,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // admin endpoints — ordem importa: mais específico primeiro
+                // admin endpoints — mais específico primeiro
                 .requestMatchers("/auth/admin/**").hasAuthority("ADMIN")
                 // rotas públicas
                 .requestMatchers("/auth/**", "/health").permitAll()
