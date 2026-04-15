@@ -26,12 +26,18 @@ module.exports = {
           light:   '#818cf8',
           dark:    '#4f46e5',
         },
+        cyber: '#00d4ff',
         xp: '#f59e0b',
         streak: '#ef4444',
         success: '#22c55e',
         surface: {
           DEFAULT: '#1e293b',
           muted:   '#0f172a',
+        },
+        app: {
+          bg:   '#0a0a0a',
+          card: '#1a1a1a',
+          input: '#0f0f0f',
         },
       },
     },

@@ -51,10 +51,10 @@
 
 ## Fase 2 — Auth UI
 **Critério de done:**
-- [ ] Tela de login
-- [ ] Tela de cadastro
-- [ ] Persistência de sessão (SecureStore)
-- [ ] Refresh token automático via interceptor Axios
+- [x] Tela de login
+- [x] Tela de cadastro
+- [x] Persistência de sessão (SecureStore)
+- [x] Refresh token automático via interceptor Axios
 - [ ] Tela de perfil
 - [ ] Upload de foto com presigned URL
 
@@ -103,10 +103,11 @@
 
 ## Contexto de Sessão
 ```
-Última sessão: 14/04/2026
-O que foi feito: Fase 1 concluída — projeto Expo scaffoldado com TypeScript,
-  Expo Router, NativeWind, Axios+JWT interceptors, Zustand, SecureStore,
-  estrutura de pastas por feature, todos os serviços base criados.
-Próxima tarefa: Fase 2 — Auth UI (telas de login, cadastro, perfil, upload de foto)
+Última sessão: 15/04/2026
+O que foi feito: Fase 2 (parcial) — telas de Login e Cadastro implementadas com
+  estética cyberpunk dark (fundo #0a0a0a, cyan #00d4ff, card #1a1a1a).
+  tailwind.config.js atualizado com cores cyber, app.bg, app.card, app.input.
+  experienceLevel defaulta para BEGINNER no cadastro (campo não exposto na UI).
+Próxima tarefa: Tela de perfil + upload de foto com presigned URL
 Bloqueios: Nenhum
 ```
