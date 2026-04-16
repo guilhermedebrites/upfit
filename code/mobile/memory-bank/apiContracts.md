@@ -178,21 +178,28 @@ Cria usuário e perfil. `experienceLevel` padrão: `BEGINNER`.
 {
   "id": "uuid",
   "userId": "uuid",
-  "currentXp": 125,
-  "totalXp": 125,
-  "level": 2,
-  "streakDays": 3,
+  "currentXp": 260,
+  "totalXp": 260,
+  "level": 3,
+  "streakDays": 2,
+  "xpToNextLevel": 240,
+  "currentLevelXpRequired": 250,
+  "nextLevelXpRequired": 500,
+  "progressPercent": 4.0,
   "achievements": [
     {
       "id": "uuid",
       "definitionId": "uuid",
-      "title": "Primeira Milha",
-      "description": "Complete sua primeira corrida",
-      "unlockedAt": "2026-04-15T10:00:00"
+      "title": "Centurião",
+      "description": "Acumulou 100 XP",
+      "unlockedAt": "2026-04-16T10:29:33"
     }
   ]
 }
 ```
+> `progressPercent` = progresso dentro do nível atual (de `currentLevelXpRequired` até `nextLevelXpRequired`).
+> XP ganho no nível = `currentXp - currentLevelXpRequired`.
+> XP total do nível = `nextLevelXpRequired - currentLevelXpRequired`.
 
 ### POST /achievements/definitions
 > ADMIN only

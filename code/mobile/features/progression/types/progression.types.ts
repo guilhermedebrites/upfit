@@ -1,19 +1,24 @@
 import { AchievementType } from '@/shared/types/enums';
 
-export interface Progression {
-  userId:       string;
-  level:        number;
-  xp:           number;
-  xpToNextLevel:number;
-  streak:       number;
-  achievements: Achievement[];
+/** Resposta de GET /progression/:userId */
+export interface ProgressionDto {
+  id:                      string;
+  userId:                  string;
+  currentXp:               number;  // XP total acumulado
+  totalXp:                 number;
+  level:                   number;
+  streakDays:              number;
+  xpToNextLevel:           number;  // XP restante para o próximo nível
+  currentLevelXpRequired:  number;  // XP mínimo para atingir o nível atual
+  nextLevelXpRequired:     number;  // XP necessário para o próximo nível
+  progressPercent:         number;  // % de progresso dentro do nível atual
+  achievements:            AchievementDto[];
 }
 
-export interface Achievement {
-  id:          string;
-  name:        string;
-  description: string;
-  type:        AchievementType;
-  iconUrl?:    string;
-  unlockedAt:  string;
+export interface AchievementDto {
+  id:           string;
+  definitionId: string;
+  title:        string;
+  description:  string;
+  unlockedAt:   string;
 }

@@ -16,6 +16,7 @@ import { useAuthStore, selectIsLoading, selectAuthError } from '@/features/auth/
 export default function LoginScreen() {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const login      = useAuthStore((s) => s.login);
   const clearError = useAuthStore((s) => s.clearError);
@@ -97,10 +98,21 @@ export default function LoginScreen() {
                   placeholderTextColor="#ffffff40"
                   value={password}
                   onChangeText={setPassword}
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                   returnKeyType="done"
                   onSubmitEditing={handleLogin}
                 />
+                <TouchableOpacity
+                  onPress={() => setShowPassword((v) => !v)}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={18}
+                    color="#ffffff50"
+                  />
+                </TouchableOpacity>
               </View>
             </View>
 

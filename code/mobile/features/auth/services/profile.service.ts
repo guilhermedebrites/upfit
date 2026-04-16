@@ -1,21 +1,14 @@
 import apiClient from '@/shared/api/client';
-import type { AuthUser } from '../types/auth.types';
-import { ExperienceLevel } from '@/shared/types/enums';
-
-export interface UpdateProfileDto {
-  name?:            string;
-  experienceLevel?: ExperienceLevel;
-  avatarUrl?:       string;
-}
+import type { ProfileDto, UpdateProfileDto } from '../types/profile.types';
 
 export const profileService = {
-  async get(userId: string): Promise<AuthUser> {
-    const { data } = await apiClient.get<AuthUser>(`/profile/${userId}`);
+  async get(userId: string): Promise<ProfileDto> {
+    const { data } = await apiClient.get<ProfileDto>(`/profile/${userId}`);
     return data;
   },
 
-  async update(userId: string, dto: UpdateProfileDto): Promise<AuthUser> {
-    const { data } = await apiClient.put<AuthUser>(`/profile/${userId}`, dto);
+  async update(userId: string, dto: UpdateProfileDto): Promise<ProfileDto> {
+    const { data } = await apiClient.put<ProfileDto>(`/profile/${userId}`, dto);
     return data;
   },
 
@@ -26,7 +19,12 @@ export const profileService = {
     return data;
   },
 
+  /** PUT direto no S3 com a presigned URL */
   async uploadToS3(presignedUrl: string, file: Blob): Promise<void> {
-    await fetch(presignedUrl, { method: 'PUT', body: file });
+    await fetch(presignedUrl, {
+      method:  'PUT',
+      body:    file,
+      headers: { 'Content-Type': file.type || 'image/jpeg' },
+    });
   },
 };
