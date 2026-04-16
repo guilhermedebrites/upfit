@@ -9,21 +9,22 @@
 - [x] Definir stack web: Next.js + TailwindCSS + Zustand + Axios
 - [x] Definir ordem: mobile primeiro, web depois
 
-## Fase 1 — Estrutura do projeto mobile (ATUAL)
-- [ ] Projeto Expo criado com TypeScript
-- [ ] Expo Router configurado
-- [ ] NativeWind configurado
-- [ ] Axios configurado com base URL e interceptors JWT
-- [ ] Zustand configurado
-- [ ] Estrutura de pastas por feature criada
-- [ ] Variáveis de ambiente configuradas (.env)
-- [ ] Fluxo de autenticação base (login, register, refresh token, persistência)
+## Fase 1 — Estrutura do projeto mobile ✅
+- [x] Projeto Expo criado com TypeScript
+- [x] Expo Router configurado
+- [x] NativeWind configurado
+- [x] Axios configurado com base URL e interceptors JWT
+- [x] Zustand configurado
+- [x] Estrutura de pastas por feature criada
+- [x] Variáveis de ambiente configuradas (.env)
+- [x] Fluxo de autenticação base (login, register, refresh token, persistência)
 
-## Fase 2 — Auth UI
-- [ ] Tela de login
-- [ ] Tela de cadastro
-- [ ] Persistência de sessão (SecureStore)
-- [ ] Refresh token automático via interceptor Axios
+## Fase 2 — Auth UI (EM ANDAMENTO)
+- [x] Tela de login — estética cyberpunk dark, integração POST /auth/login
+- [x] Tela de cadastro — integração POST /auth/register com login automático
+- [x] Persistência de sessão (SecureStore)
+- [x] Refresh token automático via interceptor Axios
+- [x] Splash screen de carregamento com redirect por estado de auth
 - [ ] Tela de perfil
 - [ ] Upload de foto com presigned URL
 
@@ -67,3 +68,6 @@
 | 14/04 | URL base única por ambiente | Nginx local / API Gateway em produção |
 | 14/04 | Web com Next.js (fase futura) | Dashboard / visão expandida após mobile |
 | 14/04 | Telas implementadas conforme protótipos do dev | Fidelidade ao design definido |
+| 15/04 | StyleSheet + NativeWind híbrido | StyleSheet garante render sem cache; NativeWind complementa |
+| 15/04 | Navegação explícita pós-login | `router.replace` no handler evita race condition com guard do layout |
+| 15/04 | `app/index.tsx` com `<Redirect>` | Rota raiz obrigatória no Expo Router v4; despacha por estado de auth |

@@ -36,68 +36,58 @@ export default function RegisterScreen() {
         password,
         experienceLevel: ExperienceLevel.BEGINNER,
       });
-      // Root layout redirects to /(tabs)/home on success
+      router.replace('/(tabs)/home');
     } catch {
       // Error already set in auth store
     }
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-app-bg">
+    <SafeAreaView className="flex-1 bg-app-bg" style={styles.safeArea}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="flex-1 items-center justify-center px-6 py-10">
+        <View className="flex-1 items-center justify-center px-6 py-10" style={styles.inner}>
 
           {/* ── Header ── */}
-          <View className="items-center mb-8">
+          <View style={styles.headerBlock}>
             <Text
               className="text-cyber text-4xl font-bold tracking-widest uppercase"
-              style={styles.underline}
+              style={styles.logoText}
             >
               UPFIT
             </Text>
-            <Text className="text-white text-xl font-semibold mt-3">
-              Novo Cadastro
-            </Text>
-            <Text
-              className="text-cyber text-xs uppercase tracking-widest mt-1"
-              style={styles.subtitleOpacity}
-            >
-              ACESSE O COMANDO CENTRAL
-            </Text>
+            <Text style={styles.titleText}>Novo Cadastro</Text>
+            <Text style={styles.subtitleText}>ACESSE O COMANDO CENTRAL</Text>
           </View>
 
           {/* ── Card with corner markers ── */}
-          <View className="w-full" style={styles.cardWrapper}>
+          <View style={styles.cardWrapper}>
             {/* Corner decorators */}
             <View style={[styles.corner, styles.cornerTL]} />
             <View style={[styles.corner, styles.cornerTR]} />
             <View style={[styles.corner, styles.cornerBL]} />
             <View style={[styles.corner, styles.cornerBR]} />
 
-            <View className="bg-app-card rounded-2xl p-6 mx-1">
+            <View className="bg-app-card rounded-2xl p-6 mx-1" style={styles.card}>
 
               {/* Error banner */}
               {error ? (
-                <View className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-5">
-                  <Text className="text-red-400 text-sm text-center">{error}</Text>
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>{error}</Text>
                 </View>
               ) : null}
 
               {/* Name field */}
-              <View className="mb-5">
-                <Text className="text-cyber/70 text-xs tracking-widest uppercase font-semibold mb-2">
-                  NOME COMPLETO
-                </Text>
-                <View className="flex-row items-center bg-app-input border border-white/10 rounded-xl px-4 py-3">
+              <View style={styles.fieldBlock}>
+                <Text style={styles.label}>NOME COMPLETO</Text>
+                <View style={styles.inputRow}>
                   <Ionicons name="person-outline" size={18} color="#00d4ff" />
                   <TextInput
-                    className="flex-1 text-white text-base ml-3"
                     style={styles.input}
                     placeholder="Seu nome completo"
-                    placeholderTextColor="#ffffff30"
+                    placeholderTextColor="#ffffff40"
                     value={name}
                     onChangeText={setName}
                     autoCapitalize="words"
@@ -108,17 +98,14 @@ export default function RegisterScreen() {
               </View>
 
               {/* Email field */}
-              <View className="mb-5">
-                <Text className="text-cyber/70 text-xs tracking-widest uppercase font-semibold mb-2">
-                  ENDEREÇO DE E-MAIL
-                </Text>
-                <View className="flex-row items-center bg-app-input border border-white/10 rounded-xl px-4 py-3">
+              <View style={styles.fieldBlock}>
+                <Text style={styles.label}>ENDEREÇO DE E-MAIL</Text>
+                <View style={styles.inputRow}>
                   <Ionicons name="at" size={18} color="#00d4ff" />
                   <TextInput
-                    className="flex-1 text-white text-base ml-3"
                     style={styles.input}
                     placeholder="seu@email.com"
-                    placeholderTextColor="#ffffff30"
+                    placeholderTextColor="#ffffff40"
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -130,17 +117,14 @@ export default function RegisterScreen() {
               </View>
 
               {/* Password field */}
-              <View className="mb-7">
-                <Text className="text-cyber/70 text-xs tracking-widest uppercase font-semibold mb-2">
-                  CÓDIGO DE ACESSO
-                </Text>
-                <View className="flex-row items-center bg-app-input border border-white/10 rounded-xl px-4 py-3">
+              <View style={[styles.fieldBlock, { marginBottom: 28 }]}>
+                <Text style={styles.label}>CÓDIGO DE ACESSO</Text>
+                <View style={styles.inputRow}>
                   <Ionicons name="lock-closed" size={18} color="#00d4ff" />
                   <TextInput
-                    className="flex-1 text-white text-base ml-3"
                     style={styles.input}
                     placeholder="••••••••"
-                    placeholderTextColor="#ffffff30"
+                    placeholderTextColor="#ffffff40"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
@@ -163,7 +147,7 @@ export default function RegisterScreen() {
 
               {/* Register button */}
               <TouchableOpacity
-                className="bg-cyber rounded-xl py-4 items-center"
+                style={styles.button}
                 onPress={handleRegister}
                 disabled={isLoading}
                 activeOpacity={0.85}
@@ -171,9 +155,7 @@ export default function RegisterScreen() {
                 {isLoading ? (
                   <ActivityIndicator color="#0a0a0a" />
                 ) : (
-                  <Text className="text-app-bg font-bold text-base tracking-widest uppercase">
-                    CRIAR CONTA →
-                  </Text>
+                  <Text style={styles.buttonText}>CRIAR CONTA →</Text>
                 )}
               </TouchableOpacity>
 
@@ -182,13 +164,13 @@ export default function RegisterScreen() {
 
           {/* Login link */}
           <TouchableOpacity
-            className="mt-8"
+            style={styles.linkButton}
             activeOpacity={0.7}
             onPress={() => { clearError(); router.push('/(auth)/login'); }}
           >
-            <Text className="text-white/40 text-sm tracking-wide">
+            <Text style={styles.linkText}>
               Já possui acesso autorizado?{' '}
-              <Text className="text-cyber font-bold uppercase">ENTRAR</Text>
+              <Text style={styles.linkHighlight}>ENTRAR</Text>
             </Text>
           </TouchableOpacity>
 
@@ -198,47 +180,44 @@ export default function RegisterScreen() {
   );
 }
 
-const CORNER_SIZE = 18;
+const CORNER_SIZE  = 18;
 const CORNER_WIDTH = 2;
 const CORNER_COLOR = '#00d4ff';
 
 const styles = StyleSheet.create({
-  scrollContent:   { flexGrow: 1 },
-  underline:       { textDecorationLine: 'underline' },
-  subtitleOpacity: { opacity: 0.55, letterSpacing: 4 },
-  input:           { color: '#ffffff' },
-  cardWrapper:     { position: 'relative' },
+  safeArea:     { flex: 1, backgroundColor: '#0a0a0a' },
+  scrollContent:{ flexGrow: 1 },
+  inner:        { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 40 },
+
+  headerBlock:  { alignItems: 'center', marginBottom: 32 },
+  logoText:     { color: '#00d4ff', fontSize: 36, fontWeight: 'bold', letterSpacing: 6, textDecorationLine: 'underline' },
+  titleText:    { color: '#ffffff', fontSize: 20, fontWeight: '600', marginTop: 12 },
+  subtitleText: { color: '#00d4ff', opacity: 0.55, fontSize: 11, letterSpacing: 4, marginTop: 4, textTransform: 'uppercase' },
+
+  cardWrapper:  { width: '100%', position: 'relative' },
+  card:         { backgroundColor: '#1a1a1a', borderRadius: 16, padding: 24, marginHorizontal: 4 },
+
+  fieldBlock:   { marginBottom: 20 },
+  label:        { color: '#00d4ffb3', fontSize: 11, letterSpacing: 2, fontWeight: '600', marginBottom: 8, textTransform: 'uppercase' },
+  inputRow:     { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0f0f0f', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: '#ffffff1a' },
+  input:        { flex: 1, color: '#ffffff', fontSize: 16, marginLeft: 12 },
+
+  button:       { backgroundColor: '#00d4ff', borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
+  buttonText:   { color: '#0a0a0a', fontWeight: 'bold', fontSize: 15, letterSpacing: 3, textTransform: 'uppercase' },
+
+  linkButton:   { marginTop: 32 },
+  linkText:     { color: '#ffffff66', fontSize: 13 },
+  linkHighlight:{ color: '#00d4ff', fontWeight: 'bold', textTransform: 'uppercase' },
+
+  errorBox:     { backgroundColor: '#ff000020', borderWidth: 1, borderColor: '#ff000050', borderRadius: 8, padding: 12, marginBottom: 20 },
+  errorText:    { color: '#f87171', fontSize: 13, textAlign: 'center' },
 
   corner: {
-    position:  'absolute',
-    width:     CORNER_SIZE,
-    height:    CORNER_SIZE,
-    zIndex:    10,
-    borderColor: CORNER_COLOR,
-    borderWidth: 0,
+    position: 'absolute', width: CORNER_SIZE, height: CORNER_SIZE,
+    zIndex: 10, borderColor: CORNER_COLOR, borderWidth: 0,
   },
-  cornerTL: {
-    top: 0, left: 0,
-    borderTopWidth:  CORNER_WIDTH,
-    borderLeftWidth: CORNER_WIDTH,
-    borderTopLeftRadius: 4,
-  },
-  cornerTR: {
-    top: 0, right: 0,
-    borderTopWidth:   CORNER_WIDTH,
-    borderRightWidth: CORNER_WIDTH,
-    borderTopRightRadius: 4,
-  },
-  cornerBL: {
-    bottom: 0, left: 0,
-    borderBottomWidth: CORNER_WIDTH,
-    borderLeftWidth:   CORNER_WIDTH,
-    borderBottomLeftRadius: 4,
-  },
-  cornerBR: {
-    bottom: 0, right: 0,
-    borderBottomWidth: CORNER_WIDTH,
-    borderRightWidth:  CORNER_WIDTH,
-    borderBottomRightRadius: 4,
-  },
+  cornerTL: { top: 0, left: 0, borderTopWidth: CORNER_WIDTH, borderLeftWidth: CORNER_WIDTH, borderTopLeftRadius: 4 },
+  cornerTR: { top: 0, right: 0, borderTopWidth: CORNER_WIDTH, borderRightWidth: CORNER_WIDTH, borderTopRightRadius: 4 },
+  cornerBL: { bottom: 0, left: 0, borderBottomWidth: CORNER_WIDTH, borderLeftWidth: CORNER_WIDTH, borderBottomLeftRadius: 4 },
+  cornerBR: { bottom: 0, right: 0, borderBottomWidth: CORNER_WIDTH, borderRightWidth: CORNER_WIDTH, borderBottomRightRadius: 4 },
 });

@@ -12,10 +12,13 @@ export interface LoginDto {
   password: string;
 }
 
+/** Contrato real da API — campos retornados na raiz, sem objeto user aninhado */
 export interface AuthResponse {
   accessToken:  string;
   refreshToken: string;
-  user:         AuthUser;
+  userId:       string;
+  name:         string;
+  email:        string;
 }
 
 export interface AuthUser {
