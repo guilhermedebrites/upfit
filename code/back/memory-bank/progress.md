@@ -64,6 +64,7 @@
 - [x] AchievementUnlocked publicado (regras: STREAK_N, VOLUME_N, LEVEL_N)
 - [x] WorkoutRecorded republicado no NotificationTopic após processamento
 - [x] GET /progression/:userId retorna XP, nível, streak e achievements com title e description
+- [x] GET /progression/:userId inclui progressPercent, xpToNextLevel, currentLevelXpRequired, nextLevelXpRequired
 - [x] Validado: POST /workouts → XP atualizado → nível correto → achievements desbloqueados
 
 ---

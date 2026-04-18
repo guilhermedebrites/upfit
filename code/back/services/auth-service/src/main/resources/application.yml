@@ -25,7 +25,11 @@ jwt:
 
 aws:
   endpoint: ${AWS_ENDPOINT:}
+  public-endpoint: ${AWS_PUBLIC_ENDPOINT:${AWS_ENDPOINT:}}
   region: ${AWS_REGION:us-east-1}
+  s3:
+    bucket:
+      profile-assets: ${S3_PROFILE_ASSETS_BUCKET:profile-assets}
 
 logging:
   level:

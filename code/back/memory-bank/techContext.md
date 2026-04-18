@@ -126,7 +126,7 @@ GET  /health
 
 ### progression-service (:8083)
 ```
-GET   /progression/:userId                      → retorna XP, nível, streak, conquistas
+GET   /progression/:userId                      → retorna XP, nível, streak, conquistas, progressPercent, xpToNextLevel, currentLevelXpRequired, nextLevelXpRequired
 POST  /achievements/definitions                 → cria definição de conquista (ADMIN only)
 GET   /achievements/definitions                 → lista todas as definições
 PATCH /achievements/definitions/:id/toggle      → ativa/desativa definição (ADMIN only)
