@@ -21,6 +21,7 @@
 - ✅ UserRole (USER/ADMIN) adicionado ao User e embutido no JWT (V1__add_user_role.sql)
 - ✅ JwtAuthFilter — valida Bearer token e popula SecurityContextHolder com role
 - ✅ POST /auth/admin/promote — endpoint ADMIN-only para promover usuário
+- ✅ GET /profile/upload-url?filename= — presigned URL via S3Presigner (5 min), bucket profile-assets, protegido por JWT
 - ✅ Validado end-to-end: register → login → token JWT válido
 
 ### Concluído (Fase 3) ✅ 11/04/2026
@@ -42,6 +43,7 @@
 - ✅ LevelUp publicado no NotificationTopic
 - ✅ AchievementUnlocked publicado quando regra atingida (STREAK_N, VOLUME_N, LEVEL_N)
 - ✅ GET /progression/:userId retorna XP, nível, streak e achievements com title e description
+- ✅ GET /progression/:userId inclui progressPercent, xpToNextLevel, currentLevelXpRequired, nextLevelXpRequired (mesmo padrão do group-service)
 
 ### Concluído (Fase 5) ✅ 13/04/2026
 - ✅ Entidades JPA: Group, GroupMembership, GroupFeedEntry
@@ -137,17 +139,13 @@
 
 ## Contexto de Sessão
 ```
-Última sessão: 14/04/2026
-O que foi feito: Fase 7 — notification-service concluído e validado.
-  - Entidade JPA Notification + NotificationRepository
-  - NotificationQueueListener: consome e deleta mensagens da NotificationQueue
-  - NotificationService: processa 7 tipos de evento, persiste com título/mensagem por tipo
-  - GET /notifications/:userId (não lidas) e ?all=true (histórico)
-  - PATCH /notifications/:id/read e PATCH /notifications/read-all
-  - Validação de ownership em todos os endpoints (userId do JWT)
-  - notification_db adicionado ao infra/postgres/init.sql
-  - docker-compose atualizado: DATABASE_URL, JWT_SECRET, SQS_NOTIFICATION_QUEUE_URL
-  - Validado end-to-end: fazer treino → notificação aparece no GET
+Última sessão: 17/04/2026
+O que foi feito:
+  1. progression-service: GET /progression/:userId agora retorna progressPercent, xpToNextLevel, currentLevelXpRequired, nextLevelXpRequired
+  2. auth-service: GET /profile/upload-url?filename= — presigned URL S3 (5 min), bucket profile-assets, protegido por JWT
+     - AwsConfig criado (S3Client + S3Presigner com pathStyleAccessEnabled)
+     - AWS SDK S3 adicionado ao pom.xml
+     - S3_PROFILE_ASSETS_BUCKET adicionado ao docker-compose
 Próxima tarefa: Fase 8 — Cloud
   Começar por: definir estratégia de infra (Terraform ou CDK), provisionamento de RDS, SQS/SNS reais, EC2 + Docker, CI/CD
 Bloqueios: Nenhum

@@ -1,5 +1,6 @@
 package br.com.upfit.progressionservice.controller;
 
+import br.com.upfit.progressionservice.config.LevelThresholdService;
 import br.com.upfit.progressionservice.dto.ProgressionResponse;
 import br.com.upfit.progressionservice.service.ProgressionEngineService;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +15,12 @@ import java.util.UUID;
 public class ProgressionController {
 
     private final ProgressionEngineService progressionEngineService;
+    private final LevelThresholdService levelThresholdService;
 
     @GetMapping("/{userId}")
     public ResponseEntity<ProgressionResponse> getProgression(@PathVariable UUID userId) {
         var progression = progressionEngineService.getByUserId(userId);
         var achievements = progressionEngineService.getAchievementsByUserId(userId);
-        return ResponseEntity.ok(ProgressionResponse.from(progression, achievements));
+        return ResponseEntity.ok(ProgressionResponse.from(progression, achievements, levelThresholdService.getThresholds()));
     }
 }
