@@ -6,16 +6,20 @@ import {
   ScrollView,
   StyleSheet,
   Animated,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Pencil } from 'lucide-react-native';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { profileService } from '@/features/auth/services/profile.service';
 import { progressionService } from '@/features/progression/services/progression.service';
+import { workoutService } from '@/features/workout/services/workout.service';
 import { parseApiError } from '@/shared/api/api-error';
 import { AppHeader } from '@/shared/components/AppHeader';
 import type { ProfileDto } from '@/features/auth/types/profile.types';
 import type { ProgressionDto } from '@/features/progression/types/progression.types';
+import type { WorkoutDto } from '@/features/workout/types/workout.types';
 
 // ─── Avatar grande ────────────────────────────────────────────────────────────
 
@@ -162,15 +166,177 @@ function LevelCard({ progression }: { progression: ProgressionDto }) {
   );
 }
 
+// ─── Conquistas ──────────────────────────────────────────────────────────────
+
+const ACHIEVEMENT_ICON: Record<string, string> = {
+  CONSISTENCY: '📅',
+  VOLUME:      '🏋️',
+  SPEED:       '⚡',
+  STRENGTH:    '💪',
+  SOCIAL:      '👥',
+};
+
+const ACHIEVEMENT_GLOW_COLOR: Record<string, string> = {
+  CONSISTENCY: '#3b82f6',
+  VOLUME:      '#8b5cf6',
+  SPEED:       '#00d4ff',
+  STRENGTH:    '#f97316',
+  SOCIAL:      '#22c55e',
+};
+
+type LockedSlot = { type: 'locked' };
+type AchievementSlotData =
+  | ProgressionDto['achievements'][number]
+  | LockedSlot;
+
+const LOCKED: LockedSlot = { type: 'locked' };
+
+function isLocked(slot: AchievementSlotData): slot is LockedSlot {
+  return (slot as LockedSlot).type === 'locked';
+}
+
+function AchievementSlot({ item }: { item: AchievementSlotData }) {
+  if (isLocked(item)) {
+    return (
+      <View style={[styles.achievementCard, styles.achievementCardLocked]}>
+        <Text style={styles.achievementIcon}>🔒</Text>
+        <Text style={styles.achievementLockedText}>BLOQUEADO</Text>
+      </View>
+    );
+  }
+
+  const icon      = item.type ? (ACHIEVEMENT_ICON[item.type] ?? '🏆') : '🏆';
+  const glowColor = item.type ? (ACHIEVEMENT_GLOW_COLOR[item.type] ?? '#00d4ff') : '#00d4ff';
+
+  return (
+    <View style={styles.achievementCard}>
+      <View style={[styles.achievementGlow, { backgroundColor: glowColor }]} />
+      <Text style={styles.achievementIcon}>{icon}</Text>
+      <Text style={[styles.achievementTitle, { marginTop: 2 }]} numberOfLines={2}>{item.title}</Text>
+    </View>
+  );
+}
+
+function AchievementsSection({ achievements }: { achievements: ProgressionDto['achievements'] }) {
+  // Array fixo de 4 posições — posições sem conquista recebem LOCKED
+  const slots: [AchievementSlotData, AchievementSlotData, AchievementSlotData, AchievementSlotData] = [
+    achievements[0] ?? LOCKED,
+    achievements[1] ?? LOCKED,
+    achievements[2] ?? LOCKED,
+    achievements[3] ?? LOCKED,
+  ];
+
+  return (
+    <View style={styles.achievementsSection}>
+      <Text style={styles.achievementsTitle}>🎖️ CONQUISTAS</Text>
+
+      {/* Linha 1 */}
+      <View style={styles.achievementsRow}>
+        <AchievementSlot item={slots[0]} />
+        <AchievementSlot item={slots[1]} />
+      </View>
+
+      {/* Linha 2 */}
+      <View style={styles.achievementsRowSecond}>
+        <AchievementSlot item={slots[2]} />
+        <AchievementSlot item={slots[3]} />
+      </View>
+    </View>
+  );
+}
+
+// ─── Atividade Recente ────────────────────────────────────────────────────────
+
+const MONTHS_PT = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+function formatRelativeDate(dateTime: string): string {
+  const date      = new Date(dateTime);
+  const today     = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const sameDay = (a: Date, b: Date) =>
+    a.getDate()     === b.getDate()  &&
+    a.getMonth()    === b.getMonth() &&
+    a.getFullYear() === b.getFullYear();
+
+  if (sameDay(date, today))     return 'HOJE';
+  if (sameDay(date, yesterday)) return 'ONTEM';
+  return `${date.getDate()} ${MONTHS_PT[date.getMonth()]}`;
+}
+
+function getWorkoutTitle(w: WorkoutDto): string {
+  if (w.notes) return w.notes;
+  if (w.type === 'RUNNING') {
+    return w.distanceKm != null ? `Corrida • ${w.distanceKm} km` : 'Corrida';
+  }
+  return w.primaryMuscleGroup ? `Treino • ${w.primaryMuscleGroup}` : 'Treino de Força';
+}
+
+const WORKOUT_CONFIG = {
+  RUNNING:  { icon: '🏃', color: '#00d4ff' },
+  STRENGTH: { icon: '🏋️', color: '#22c55e' },
+} as const;
+
+function WorkoutCard({ workout }: { workout: WorkoutDto }) {
+  const cfg      = WORKOUT_CONFIG[workout.type] ?? WORKOUT_CONFIG.STRENGTH;
+  const title    = getWorkoutTitle(workout);
+  const dateStr  = formatRelativeDate(workout.dateTime);
+  const subtitle = `${dateStr}  •  ${workout.durationMin} MIN  •  ${Math.round(workout.caloriesBurned)} KCAL`;
+
+  return (
+    <View style={styles.workoutCard}>
+      {/* Ícone colorido */}
+      <View style={[styles.workoutIconBox, { borderColor: cfg.color }]}>
+        <Text style={styles.workoutIconEmoji}>{cfg.icon}</Text>
+      </View>
+
+      {/* Texto */}
+      <View style={styles.workoutInfo}>
+        <Text style={styles.workoutTitle} numberOfLines={1}>{title}</Text>
+        <Text style={styles.workoutSubtitle}>{subtitle}</Text>
+      </View>
+    </View>
+  );
+}
+
+function ActivitySkeleton() {
+  const opacity = useSkeletonOpacity();
+  return (
+    <View style={styles.activitySection}>
+      <Animated.View style={[styles.skeletonLine, { width: 160, opacity }]} />
+      {[0, 1, 2].map((i) => (
+        <Animated.View key={i} style={[styles.skeletonWorkoutCard, { opacity }]} />
+      ))}
+    </View>
+  );
+}
+
+function RecentActivitySection({ workouts }: { workouts: WorkoutDto[] }) {
+  if (workouts.length === 0) return null;
+
+  return (
+    <View style={styles.activitySection}>
+      <Text style={styles.activityTitle}>⏱ ATIVIDADES RECENTES</Text>
+      {workouts.map((w) => (
+        <WorkoutCard key={w.id} workout={w} />
+      ))}
+    </View>
+  );
+}
+
 // ─── Tela principal ───────────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
-  const user = useAuthStore((s) => s.user);
+  const router = useRouter();
+  const user   = useAuthStore((s) => s.user);
 
   const [profile,      setProfile]      = useState<ProfileDto | null>(null);
   const [progression,  setProgression]  = useState<ProgressionDto | null>(null);
+  const [workouts,     setWorkouts]     = useState<WorkoutDto[]>([]);
   const [isLoading,    setIsLoading]    = useState(true);
   const [progLoading,  setProgLoading]  = useState(true);
+  const [wktLoading,   setWktLoading]   = useState(true);
   const [error,        setError]        = useState<string | null>(null);
 
   const nameInitial = user?.name?.charAt(0) ?? user?.email?.charAt(0) ?? '?';
@@ -182,6 +348,7 @@ export default function ProfileScreen() {
 
       setIsLoading(true);
       setProgLoading(true);
+      setWktLoading(true);
       setError(null);
 
       profileService
@@ -195,6 +362,12 @@ export default function ProfileScreen() {
         .then(setProgression)
         .catch(() => {})
         .finally(() => setProgLoading(false));
+
+      workoutService
+        .listByUser(user.id)
+        .then((list) => setWorkouts(list.slice(0, 3)))
+        .catch(() => setWorkouts([]))
+        .finally(() => setWktLoading(false));
     }, [user?.id]),
   );
 
@@ -233,6 +406,16 @@ export default function ProfileScreen() {
         {!isLoading && !error && (
           <>
             <View style={styles.card}>
+              {/* Botão de editar — canto superior direito */}
+              <TouchableOpacity
+                style={styles.editBtn}
+                onPress={() => router.push('/profile/edit')}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Pencil size={18} color="#00d4ff" />
+              </TouchableOpacity>
+
               {/* Avatar grande */}
               <View style={styles.avatarWrapper}>
                 <AvatarLarge
@@ -260,6 +443,15 @@ export default function ProfileScreen() {
             {/* ── Progresso de nível ── */}
             {progLoading && <LevelCardSkeleton />}
             {!progLoading && progression && <LevelCard progression={progression} />}
+
+            {/* ── Conquistas ── */}
+            {!progLoading && progression && (
+              <AchievementsSection achievements={progression.achievements} />
+            )}
+
+            {/* ── Atividade Recente ── */}
+            {wktLoading && <ActivitySkeleton />}
+            {!wktLoading && <RecentActivitySection workouts={workouts} />}
           </>
         )}
       </ScrollView>
@@ -274,7 +466,11 @@ const AVATAR_SIZE = 96;
 const styles = StyleSheet.create({
   safe:          { flex: 1, backgroundColor: '#0a0a0a' },
   scroll:        { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 40 },
+  scrollContent: { 
+    paddingHorizontal: 16, 
+    paddingTop: 8, 
+    paddingBottom: 40 
+  },
 
   // ── Card ──
   card: {
@@ -285,6 +481,14 @@ const styles = StyleSheet.create({
     borderWidth:     1,
     borderColor:     '#00d4ff1a',
     marginTop:       8,
+    position:        'relative',
+  },
+  editBtn: {
+    position: 'absolute',
+    top:      12,
+    right:    12,
+    zIndex:   1,
+    padding:  4,
   },
 
   // ── Avatar ──
@@ -342,7 +546,7 @@ const styles = StyleSheet.create({
   // ── Stats row ──
   statsRow: {
     flexDirection: 'row',
-    marginTop:     12,
+    marginTop:     16,
     gap:           8,
   },
   statCard: {
@@ -396,10 +600,14 @@ const styles = StyleSheet.create({
   levelCard: {
     backgroundColor: '#1a1a1a',
     borderRadius:    16,
-    borderWidth:     1,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 5,
     borderColor:     '#00d4ff1a',
+    borderLeftColor: '#69DAFF',
     padding:         20,
-    marginTop:       12,
+    marginTop:       16,
   },
   levelHeader: {
     flexDirection:  'row',
@@ -451,6 +659,71 @@ const styles = StyleSheet.create({
     backgroundColor: '#334155',
   },
 
+  // ── Conquistas ──
+  achievementsSection: {
+    marginTop: 16,
+  },
+  achievementsTitle: {
+    color:         '#ffffff',
+    fontSize:      15,
+    fontWeight:    'bold',
+    letterSpacing: 1,
+    marginBottom:  12,
+  },
+  achievementsRow: {
+    flexDirection: 'row',
+    gap:           12,
+  },
+  achievementsRowSecond: {
+    flexDirection: 'row',
+    gap:           12,
+    marginTop:     12,
+  },
+  achievementCard: {
+    flex:              1,
+    backgroundColor:   '#1a1a1a',
+    borderRadius:      14,
+    borderWidth:       1,
+    paddingVertical:   20,
+    paddingHorizontal: 12,
+    alignItems:        'center',
+    gap:               10,
+    position:          'relative',
+    overflow:          'hidden',
+  },
+  achievementCardLocked: {
+    borderStyle:  'dashed',
+    borderColor:  '#ffffff15',
+    backgroundColor: '#111111',
+  },
+  achievementGlow: {
+    position:     'absolute',
+    width:        56,
+    height:       56,
+    borderRadius: 28,
+    opacity:      0.15,
+    top:          14,
+  },
+  achievementIcon: {
+    fontSize: 30,
+    zIndex:   1,
+  },
+  achievementTitle: {
+    color:      '#ffffff',
+    fontSize:   12,
+    fontWeight: '600',
+    textAlign:  'center',
+    lineHeight: 17,
+    zIndex:     1,
+  },
+  achievementLockedText: {
+    color:         '#334155',
+    fontSize:      10,
+    fontWeight:    '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+
   // ── Skeleton ──
   skeletonCircle: {
     width:           AVATAR_SIZE + 8,
@@ -462,6 +735,63 @@ const styles = StyleSheet.create({
   skeletonLine: {
     height:          14,
     borderRadius:    7,
+    backgroundColor: '#334155',
+    marginBottom:    10,
+  },
+
+  // ── Atividade Recente ──
+  activitySection: {
+    marginTop: 24,
+  },
+  activityTitle: {
+    color:         '#ffffff',
+    fontSize:      15,
+    fontWeight:    'bold',
+    letterSpacing: 1,
+    marginBottom:  12,
+  },
+  workoutCard: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    backgroundColor: '#1a1a1a',
+    borderRadius:    14,
+    borderWidth:     1,
+    borderColor:     '#ffffff0a',
+    padding:         14,
+    marginBottom:    10,
+    gap:             14,
+  },
+  workoutIconBox: {
+    width:           44,
+    height:          44,
+    borderRadius:    10,
+    borderWidth:     1,
+    backgroundColor: '#0f0f0f',
+    alignItems:      'center',
+    justifyContent:  'center',
+  },
+  workoutIconEmoji: {
+    fontSize: 22,
+  },
+  workoutInfo: {
+    flex: 1,
+    gap:  4,
+  },
+  workoutTitle: {
+    color:      '#ffffff',
+    fontSize:   14,
+    fontWeight: '600',
+  },
+  workoutSubtitle: {
+    color:         '#475569',
+    fontSize:      11,
+    fontWeight:    '500',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  skeletonWorkoutCard: {
+    height:          72,
+    borderRadius:    14,
     backgroundColor: '#334155',
     marginBottom:    10,
   },

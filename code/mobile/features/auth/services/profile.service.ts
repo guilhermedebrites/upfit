@@ -16,7 +16,10 @@ export const profileService = {
     const { data } = await apiClient.get<{ presignedUrl: string; objectUrl: string }>(
       `/profile/upload-url?filename=${encodeURIComponent(filename)}`,
     );
-    return data;
+    // Em dev local, o backend devolve http://localstack:4566/...
+    // O app precisa de http://localhost:4566/... para alcançar o container
+    const presignedUrl = data.presignedUrl.replace('localstack:4566', 'localhost:4566');
+    return { presignedUrl, objectUrl: data.objectUrl };
   },
 
   /** PUT direto no S3 com a presigned URL */

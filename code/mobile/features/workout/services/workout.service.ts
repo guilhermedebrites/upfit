@@ -1,14 +1,14 @@
 import apiClient from '@/shared/api/client';
-import type { CreateWorkoutDto, Workout } from '../types/workout.types';
+import type { CreateWorkoutDto, WorkoutDto } from '../types/workout.types';
 
 export const workoutService = {
-  async create(dto: CreateWorkoutDto): Promise<Workout> {
-    const { data } = await apiClient.post<Workout>('/workouts', dto);
+  async create(dto: CreateWorkoutDto): Promise<WorkoutDto> {
+    const { data } = await apiClient.post<WorkoutDto>('/workouts', dto);
     return data;
   },
 
-  async listByUser(userId: string): Promise<Workout[]> {
-    const { data } = await apiClient.get<Workout[]>(`/workouts/user/${userId}`);
+  async listByUser(userId: string): Promise<WorkoutDto[]> {
+    const { data } = await apiClient.get<WorkoutDto[]>(`/workouts/user/${userId}`);
     return data;
   },
 };

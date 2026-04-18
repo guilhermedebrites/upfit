@@ -21,4 +21,5 @@ export interface AchievementDto {
   title:        string;
   description:  string;
   unlockedAt:   string;
+  type?:        'CONSISTENCY' | 'VOLUME' | 'SPEED' | 'STRENGTH' | 'SOCIAL';
 }
