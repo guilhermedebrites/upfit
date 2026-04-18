@@ -34,7 +34,7 @@ export function AppHeader({ photoUrl, initial = '?', level, streak }: Props) {
       <View style={styles.pill}>
         <Text style={styles.pillText}>
           LEVEL {level ?? '—'}
-          {'  '}
+          {' • '}
           {streak != null ? streak : '—'} 🔥
         </Text>
       </View>
