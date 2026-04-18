@@ -69,6 +69,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   clearError: () => set({ error: null }),
 
+  patchUser: (patch) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...patch } : null,
+    })),
+
   /** Reidrata sessão ao abrir o app */
   hydrate: async () => {
     const token = await tokenStorage.getAccessToken();
