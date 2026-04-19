@@ -39,9 +39,11 @@ export interface AuthState {
 }
 
 export interface AuthActions {
-  login:    (dto: LoginDto)    => Promise<void>;
-  register: (dto: RegisterDto) => Promise<void>;
-  logout:   ()                 => Promise<void>;
-  hydrate:  ()                 => Promise<void>;
-  clearError: ()               => void;
+  login:      (dto: LoginDto)           => Promise<void>;
+  register:   (dto: RegisterDto)        => Promise<void>;
+  logout:     ()                        => Promise<void>;
+  hydrate:    ()                        => Promise<void>;
+  clearError: ()                        => void;
+  /** Atualiza campos parciais do usuário logado (ex: avatarUrl após upload) */
+  patchUser:  (patch: Partial<AuthUser>) => void;
 }

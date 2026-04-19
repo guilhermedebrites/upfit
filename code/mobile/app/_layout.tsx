@@ -3,6 +3,10 @@ import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuthStore, selectIsHydrated } from '@/features/auth/store/auth.store';
+import { authEvents } from '@/shared/auth/auth-events';
+
+// Rotas públicas — qualquer outra é protegida
+const PUBLIC_SEGMENTS = new Set(['(auth)', 'index', undefined]);
 
 function RootLayoutNav() {
   const router    = useRouter();
@@ -10,18 +14,27 @@ function RootLayoutNav() {
   const hydrated  = useAuthStore(selectIsHydrated);
   const user      = useAuthStore((s) => s.user);
   const isLoading = useAuthStore((s) => s.isLoading);
+  const logout    = useAuthStore((s) => s.logout);
 
+  // Redireciona para login quando a sessão expira (refresh token falhou)
+  useEffect(() => {
+    authEvents.onSessionExpired(async () => {
+      await logout();
+      router.replace('/(auth)/login');
+    });
+  }, [logout, router]);
+
+  // Guard de rotas protegidas
   useEffect(() => {
     // Aguarda hydration e não interfere enquanto login/register está em progresso
     if (!hydrated || isLoading) return;
 
-    const inTabsGroup = segments[0] === '(tabs)';
+    const isPublicRoute = PUBLIC_SEGMENTS.has(segments[0] as string | undefined);
 
-    // Único caso do guard: sessão expirou ou logout enquanto estava nas tabs
-    if (!user && inTabsGroup) {
+    if (!user && !isPublicRoute) {
       router.replace('/(auth)/login');
     }
-  }, [hydrated, isLoading, user, segments]);
+  }, [hydrated, isLoading, user, segments]); 
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0a0a0a' } }}>

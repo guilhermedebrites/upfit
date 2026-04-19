@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker exec *)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/workouts -H 'Content-Type: application/json' -H 'Authorization: Bearer FAKE' -d '{}')",
+      "Bash(curl -v -X POST http://localhost:8080/workouts -H 'Content-Type: application/json' -H 'Authorization: Bearer FAKE_TOKEN' -d '{}')"
+    ]
+  }
+}

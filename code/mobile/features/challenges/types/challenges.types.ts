@@ -1,32 +1,36 @@
 import { ChallengeStatus, ChallengeType } from '@/shared/types/enums';
 
-export interface Challenge {
-  id:          string;
-  title:       string;
-  description: string;
-  type:        ChallengeType;
-  status:      ChallengeStatus;
-  imageUrl?:   string;
-  startDate:   string;
-  endDate:     string;
-  goal:        number;
-  unit:        string;
+export interface MyParticipation {
+  currentProgress: number;
+  completed:       boolean;
+  progressPercent: number;
 }
 
-export interface ChallengeParticipant {
-  userId:    string;
-  name:      string;
-  avatarUrl?:string;
-  progress:  number;
+export interface Challenge {
+  id:             string;
+  title:          string;
+  description:    string;
+  goal:           string;        // ex: "Acumule 10km de corrida"
+  goalTarget:     number;
+  rewardXp:       number;
+  type:           ChallengeType;
+  status:         ChallengeStatus;
+  startDate:      string;
+  endDate:        string;
+  requiredLevel:  number | null;
+  coverImageUrl?: string | null;
+  myParticipation?: MyParticipation | null;
 }
 
 export interface CreateChallengeDto {
-  title:       string;
-  description: string;
-  type:        ChallengeType;
-  startDate:   string;
-  endDate:     string;
-  goal:        number;
-  unit:        string;
-  imageUrl?:   string;
+  title:          string;
+  description:    string;
+  goal:           string;
+  goalTarget:     number;
+  rewardXp:       number;
+  type:           ChallengeType;
+  startDate:      string;
+  endDate:        string;
+  requiredLevel?: number | null;
+  coverImageUrl?: string | null;
 }

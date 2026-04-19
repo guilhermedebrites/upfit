@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ENV } from '@/shared/config/env';
 import { tokenStorage } from '@/shared/auth/token-storage';
+import { authEvents } from '@/shared/auth/auth-events';
 
 // Endpoints que não precisam de Authorization
 const PUBLIC_PATHS = ['/auth/register', '/auth/login', '/auth/refresh'];
@@ -35,11 +36,12 @@ function processQueue(error: unknown, token: string | null) {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    const status         = error.response?.status;
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    const is401           = error.response?.status === 401;
-    const alreadyRetried  = originalRequest._retry;
-    const isRefreshPath   = originalRequest.url?.startsWith('/auth/refresh');
+    const is401          = status === 401;
+    const alreadyRetried = originalRequest?._retry;
+    const isRefreshPath  = originalRequest?.url?.startsWith('/auth/refresh');
 
     if (!is401 || alreadyRetried || isRefreshPath) {
       return Promise.reject(error);
@@ -75,7 +77,7 @@ apiClient.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       await tokenStorage.clearTokens();
-      // Zustand auth store vai detectar ausência de token e redirecionar para login
+      authEvents.emitSessionExpired();
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
