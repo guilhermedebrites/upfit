@@ -1,37 +1,45 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 interface Props {
-  initial?: string;
-  level?:   number | null;
-  streak?:  number | null;
+  initial?:  string;
+  photoUrl?: string | null;
+  level?:    number | null;
+  streak?:   number | null;
 }
 
 /**
  * Header fixo exibido em quase todas as telas.
- * - Lê avatarUrl diretamente do auth store para refletir uploads sem delay
+ * - photoUrl pode ser passada como prop (ex: home screen), ou lê do auth store se não fornecida
  * - Esquerda: avatar pequeno + "UPFIT"
  * - Direita: pílula "LEVEL X • Y 🔥"
  */
-export function AppHeader({ initial = '?', level, streak }: Props) {
-  const photoUrl = useAuthStore((s) => s.user?.avatarUrl ?? null);
+export function AppHeader({ initial = '?', photoUrl, level, streak }: Props) {
+  const router   = useRouter();
+  const storePhotoUrl = useAuthStore((s) => s.user?.avatarUrl ?? null);
+  const displayPhotoUrl = photoUrl ?? storePhotoUrl;
   const [imgError, setImgError] = useState(false);
 
-  // Reseta o erro sempre que chegar uma nova URL (ex: após upload)
-  useEffect(() => { setImgError(false); }, [photoUrl]);
+  // Reseta o erro sempre que chegar uma nova URL (ex: após upload ou prop change)
+  useEffect(() => { setImgError(false); }, [displayPhotoUrl]);
 
-  const showPhoto = !!photoUrl && !imgError;
+  const showPhoto = !!displayPhotoUrl && !imgError;
 
   return (
     <View className="flex-row items-center justify-between px-4 py-3 bg-app-bg">
-      {/* Esquerda */}
-      <View className="flex-row items-center gap-2.5">
+      {/* Esquerda — avatar clicável abre o perfil */}
+      <TouchableOpacity
+        onPress={() => router.push('/profile')}
+        activeOpacity={0.75}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+      >
         <View style={styles.avatarSmall}>
           {showPhoto ? (
             <Image
-              key={photoUrl!}
-              source={{ uri: photoUrl! }}
+              key={displayPhotoUrl!}
+              source={{ uri: displayPhotoUrl! }}
               style={styles.avatarSmallImg}
               onError={() => setImgError(true)}
             />
@@ -44,7 +52,7 @@ export function AppHeader({ initial = '?', level, streak }: Props) {
         <Text className="text-cyber font-bold text-base" style={{ letterSpacing: 4 }}>
           UPFIT
         </Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Pílula direita */}
       <View className="bg-app-card rounded-[20px] border border-cyber/20 px-3 py-1.5">

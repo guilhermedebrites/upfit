@@ -7,13 +7,19 @@ export const challengesService = {
     return data;
   },
 
+  /** Retorna desafios em que o usuário participa, com myParticipation preenchido */
+  async listParticipating(): Promise<Challenge[]> {
+    const { data } = await apiClient.get<Challenge[]>('/challenges?participating=true');
+    return data;
+  },
+
   async getById(id: string): Promise<Challenge> {
     const { data } = await apiClient.get<Challenge>(`/challenges/${id}`);
     return data;
   },
 
-  async join(id: string): Promise<void> {
-    await apiClient.post(`/challenges/${id}/join`);
+  async join(id: string, userLevel: number): Promise<void> {
+    await apiClient.post(`/challenges/${id}/join`, { userLevel });
   },
 
   async leave(id: string): Promise<void> {

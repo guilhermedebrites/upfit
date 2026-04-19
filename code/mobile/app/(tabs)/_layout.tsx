@@ -1,67 +1,56 @@
 import { Tabs } from 'expo-router';
-import { View, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '@/theme/colors';
 
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  return (
-    <View className="items-center">
-      <Text className={focused ? 'text-brand text-xs font-semibold' : 'text-slate-500 text-xs'}>
-        {label}
-      </Text>
-    </View>
-  );
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+interface TabConfig {
+  name:     string;
+  label:    string;
+  icon:     IoniconName;
+  iconFill: IoniconName;
 }
+
+const TABS: TabConfig[] = [
+  { name: 'home',       label: 'HUD',      icon: 'home-outline',    iconFill: 'home'    },
+  { name: 'workouts',   label: 'TREINOS',  icon: 'barbell-outline', iconFill: 'barbell' },
+  { name: 'groups',     label: 'GUILDAS',  icon: 'people-outline',  iconFill: 'people'  },
+  { name: 'challenges', label: 'DESAFIOS', icon: 'trophy-outline',  iconFill: 'trophy'  },
+];
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown:     false,
-        tabBarStyle:     { backgroundColor: '#1e293b', borderTopColor: '#334155' },
-        tabBarShowLabel: false,
+        headerShown:            false,
+        tabBarStyle:            {
+          backgroundColor: '#111111',
+          borderTopColor:  'rgba(255,255,255,0.06)',
+          height:          60,
+          paddingBottom:   8,
+        },
+        tabBarActiveTintColor:   Colors.cyber,
+        tabBarInactiveTintColor: Colors.faint,
+        tabBarLabelStyle:        { fontSize: 9, fontWeight: '700', letterSpacing: 1 },
+        tabBarItemStyle:         { flex: 1 },
       }}
     >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title:    'Home',
-          tabBarIcon: ({ focused }) => <TabIcon label="Home" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="workouts"
-        options={{
-          title:    'Treinos',
-          tabBarIcon: ({ focused }) => <TabIcon label="Treinos" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="groups"
-        options={{
-          title:    'Grupos',
-          tabBarIcon: ({ focused }) => <TabIcon label="Grupos" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="challenges"
-        options={{
-          title:    'Desafios',
-          tabBarIcon: ({ focused }) => <TabIcon label="Desafios" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title:    'Notificações',
-          tabBarIcon: ({ focused }) => <TabIcon label="Avisos" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title:    'Perfil',
-          tabBarIcon: ({ focused }) => <TabIcon label="Perfil" focused={focused} />,
-        }}
-      />
+      {TABS.map(({ name, label, icon, iconFill }) => (
+        <Tabs.Screen
+          key={name}
+          name={name}
+          options={{
+            title:      label,
+            tabBarIcon: ({ focused, color }) => (
+              <Ionicons
+                name={focused ? iconFill : icon}
+                size={22}
+                color={color}
+              />
+            ),
+          }}
+        />
+      ))}
     </Tabs>
   );
 }

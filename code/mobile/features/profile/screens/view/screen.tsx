@@ -421,6 +421,7 @@ export default function ProfileScreen() {
   const router    = useRouter();
   const user      = useAuthStore((s) => s.user);
   const patchUser = useAuthStore((s) => s.patchUser);
+  const logout    = useAuthStore((s) => s.logout);
 
   const [profile,     setProfile]     = useState<ProfileDto | null>(null);
   const [progression, setProgression] = useState<ProgressionDto | null>(null);
@@ -476,6 +477,7 @@ export default function ProfileScreen() {
       {/* ── Header fixo ── */}
       <AppHeader
         initial={nameInitial}
+        photoUrl={displayPhotoUrl ?? undefined}
         level={progression?.level ?? null}
         streak={progression?.streakDays ?? null}
       />
@@ -555,6 +557,19 @@ export default function ProfileScreen() {
             {/* Recent Activity */}
             {wktLoading && <ActivitySkeleton />}
             {!wktLoading && <RecentActivitySection workouts={workouts} />}
+
+            {/* Logout Button */}
+            <TouchableOpacity
+              onPress={async () => {
+                await logout();
+                router.replace('/(auth)/login');
+              }}
+              style={styles.logoutBtn}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="log-out-outline" size={20} color="#ff4444" />
+              <Text style={styles.logoutBtnText}>DESLOGAR</Text>
+            </TouchableOpacity>
           </>
         )}
       </ScrollView>
@@ -690,5 +705,27 @@ const styles = StyleSheet.create({
     borderRadius:    14,
     backgroundColor: Colors.skeleton,
     marginBottom:    10,
+  },
+
+  // Logout button
+  logoutBtn: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    justifyContent:  'center',
+    gap:             12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius:    12,
+    borderWidth:     1.5,
+    borderColor:     '#ff4444',
+    marginTop:       32,
+    marginBottom:    8,
+    backgroundColor: 'rgba(255, 68, 68, 0.08)',
+  },
+  logoutBtnText: {
+    fontSize:        16,
+    fontWeight:      '700',
+    color:           '#ff4444',
+    letterSpacing:   0.5,
   },
 });

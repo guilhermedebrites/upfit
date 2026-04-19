@@ -74,14 +74,44 @@ export const useAuthStore = create<AuthStore>((set) => ({
       user: state.user ? { ...state.user, ...patch } : null,
     })),
 
-  /** Reidrata sessão ao abrir o app */
-  /** Reidrata sessão ao abrir o app */
+  /** Reidrata sessão ao abrir o app.
+   *  1. Sem token           → vai para login.
+   *  2. Token válido        → restaura sessão normalmente.
+   *  3. Token expirado      → tenta refresh silencioso.
+   *  4. Refresh falhou      → limpa tudo, vai para login.
+   */
   hydrate: async () => {
     const token = await tokenStorage.getAccessToken();
-    if (token) {
-      const user = buildUserFromJwt(token);
-      set({ user, accessToken: token, isHydrated: true });
-    } else {
+
+    if (!token) {
+      set({ isHydrated: true });
+      return;
+    }
+
+    const jwt       = decodeJwtPayload(token);
+    const isExpired = !jwt?.sub || jwt.exp * 1000 < Date.now();
+
+    if (!isExpired) {
+      set({ user: buildUserFromJwt(token), accessToken: token, isHydrated: true });
+      return;
+    }
+
+    // Token expirado — tenta refresh silencioso antes de redirecionar
+    const storedRefresh = await tokenStorage.getRefreshToken();
+    if (!storedRefresh) {
+      await tokenStorage.clearTokens();
+      set({ isHydrated: true });
+      return;
+    }
+
+    try {
+      const response = await authService.refresh(storedRefresh);
+      await tokenStorage.setAccessToken(response.accessToken);
+      await tokenStorage.setRefreshToken(response.refreshToken);
+      const user = buildUserFromJwt(response.accessToken);
+      set({ user, accessToken: response.accessToken, isHydrated: true });
+    } catch {
+      await tokenStorage.clearTokens();
       set({ isHydrated: true });
     }
   },
