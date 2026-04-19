@@ -36,6 +36,7 @@ services:
       - SERVICES=sqs,sns,s3
       - AWS_DEFAULT_REGION=${AWS_REGION:-us-east-1}
       - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-}
+      - LOCALSTACK_PERSISTENCE=1
     volumes:
       - localstack-data:/var/lib/localstack
       - ./infra/localstack/setup.sh:/etc/localstack/init/ready.d/setup.sh
