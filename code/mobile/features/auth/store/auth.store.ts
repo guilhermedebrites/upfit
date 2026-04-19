@@ -75,6 +75,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     })),
 
   /** Reidrata sessão ao abrir o app */
+  /** Reidrata sessão ao abrir o app */
   hydrate: async () => {
     const token = await tokenStorage.getAccessToken();
     if (token) {

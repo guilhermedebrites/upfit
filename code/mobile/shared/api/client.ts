@@ -20,6 +20,10 @@ apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =>
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
+  // DEBUG
+  console.log('[REQ]', config.method?.toUpperCase(), config.url);
+  console.log('[REQ headers]', JSON.stringify(config.headers));
+  console.log('[REQ body]', JSON.stringify(config.data));
   return config;
 });
 
@@ -33,13 +37,24 @@ function processQueue(error: unknown, token: string | null) {
 }
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // DEBUG
+    console.log('[RES OK]', response.status, response.config.url);
+    return response;
+  },
   async (error: AxiosError) => {
+    const status         = error.response?.status;
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    const is401           = error.response?.status === 401;
-    const alreadyRetried  = originalRequest._retry;
-    const isRefreshPath   = originalRequest.url?.startsWith('/auth/refresh');
+    // DEBUG
+    console.log('[RES ERR] status:', status ?? 'NO_RESPONSE');
+    console.log('[RES ERR] url:', error.config?.url);
+    console.log('[RES ERR] body:', JSON.stringify(error.response?.data));
+    console.log('[RES ERR] message:', error.message);
+
+    const is401          = status === 401;
+    const alreadyRetried = originalRequest?._retry;
+    const isRefreshPath  = originalRequest?.url?.startsWith('/auth/refresh');
 
     if (!is401 || alreadyRetried || isRefreshPath) {
       return Promise.reject(error);
@@ -75,7 +90,6 @@ apiClient.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       await tokenStorage.clearTokens();
-      // Zustand auth store vai detectar ausência de token e redirecionar para login
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

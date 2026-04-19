@@ -279,6 +279,13 @@ function AchievementSlot({ item }: { item: AchievementSlotData }) {
       >
         {item.title}
       </Text>
+      <Text
+        className="text-cyber text-xs font-semibold text-center"
+        style={{ lineHeight: 17, marginTop: 10 }}
+        numberOfLines={2}
+      >
+        {item.description}
+      </Text>
     </View>
   );
 }

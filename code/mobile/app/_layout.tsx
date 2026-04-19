@@ -25,9 +25,11 @@ function RootLayoutNav() {
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0a0a0a' } }}>
-      <Stack.Screen name="index"  />
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="index"   />
+      <Stack.Screen name="(auth)"  />
+      <Stack.Screen name="(tabs)"  />
+      <Stack.Screen name="profile" />
+      <Stack.Screen name="workout" />
     </Stack>
   );
 }
