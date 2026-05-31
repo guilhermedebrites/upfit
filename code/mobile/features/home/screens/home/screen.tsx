@@ -13,6 +13,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { profileService } from '@/features/auth/services/profile.service';
 import { progressionService } from '@/features/progression/services/progression.service';
+import { useProgressionStore } from '@/features/progression/store/progression.store';
 import { workoutService } from '@/features/workout/services/workout.service';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { challengesService } from '@/features/challenges/services/challenges.service';
@@ -102,9 +103,10 @@ function HomeSkeleton() {
 // ─── Tela ─────────────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const user   = useAuthStore((s) => s.user);
-  const patchUser = useAuthStore((s) => s.patchUser);
+  const router      = useRouter();
+  const user        = useAuthStore((s) => s.user);
+  const patchUser   = useAuthStore((s) => s.patchUser);
+  const syncProgression = useProgressionStore((s) => s.fetch);
 
   const [loading,         setLoading]         = useState(true);
   const [photoUrl,        setPhotoUrl]        = useState<string | null>(null);
@@ -128,7 +130,10 @@ export default function HomeScreen() {
           profileService.get(user!.id),
         ]);
 
-        if (progRes.status       === 'fulfilled') setProgression(progRes.value);
+        if (progRes.status       === 'fulfilled') {
+          setProgression(progRes.value);
+          syncProgression(user!.id);
+        }
         if (workoutsRes.status   === 'fulfilled') setLastWorkout(workoutsRes.value[0] ?? null);
         if (challengesRes.status === 'fulfilled') {
           const active = challengesRes.value.find((c) => c.status === ChallengeStatus.ACTIVE) ?? null;

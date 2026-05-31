@@ -45,6 +45,11 @@ export const groupsService = {
     return data;
   },
 
+  async getFeed(id: string): Promise<import('../types/groups.types').GroupFeedItem[]> {
+    const { data } = await apiClient.get(`/groups/${id}/feed`);
+    return data;
+  },
+
   async getUploadUrl(filename: string): Promise<{ presignedUrl: string; objectUrl: string }> {
     const { data } = await apiClient.get<{ presignedUrl: string; objectUrl: string }>(
       `/groups/upload-url?filename=${encodeURIComponent(filename)}`,
